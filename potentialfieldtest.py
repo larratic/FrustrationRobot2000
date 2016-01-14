@@ -34,8 +34,9 @@ r_visual_range   = 100      #measured from robot center
 r_visual_angle   = 30       #in degrees, must divide 90 exactly!
 r_visual_granularity = 5    #must be < wall_thickness for walls to be detected correctly!
 
+user_input       = 0        #amount of influence of user control the human has on the system
 
-user_input       = 0.0        #amount of influence of user control the human has on the system
+
 
 list_obstacles = []
 blocked_nodes = []
@@ -48,44 +49,26 @@ from pygame.locals import *
 import math
 import random
 import time
-from astar import PathManager
+import numpy
+
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 screen = pygame.display.set_mode((display_cols, display_rows))
-list_traces = []
+list_walls= []
 
-class Trace():
-    def __init__(self, from_rect, start_angle, stop_angle):
-        self.rect       = from_rect
-        self.start_angle= start_angle
-        self.stop_angle = stop_angle
 
-class Obstacle(pygame.Rect):       #for now just colored rectangles
-    def __init__(self, x_topleft, y_topleft, width, height, color):
-        self.x_topleft  = x_topleft
-        self.y_topleft  = y_topleft
-        
-        self.width      = width
-        self.height     = height
+
+class Obstacle(pygame.Rect):       #circles
+    def __init__(self, x, y, r, color):
+        self.x  = x
+        self.y  = y
+        self.r          = r
         self.color      = pygame.Color(color)
-        self.rect       = pygame.Rect(x_topleft, y_topleft, width, height)
+        self.rect       = pygame.Rect(x-r, y-r, r*2, r*2)
         
-        self.r          = width
-        
-        self.x          = self.rect.center[0]
-        self.y          = self.rect.center[1]
-        
-        self.force      = 0.0
+        self.dist      = 0.0
         self.theta      = 0.0
         
-    def nodes(self):
-        nodes = []
-        buff  = 15
-        
-        for y in range(self.y_topleft -buff, self.y_topleft + self.height + buff):
-            for x in range(self.x_topleft-buff, self.x_topleft + self.width + buff ):
-                nodes.append((int(x), int(y)))
-        return nodes
 
 ''' Changes alpha for surfaces with per-pixel alpha; only for small surfaces!
     Sets alpha for WHITE pixels to new_alpha.
@@ -115,10 +98,6 @@ def change_alpha_for_alpha(surface,new_alpha):
                 surface.set_at((x,y),(r,g,b,new_alpha))
     return surface
 
-def draw_traces(target_surf):
-    for t in list_traces:
-        pygame.draw.arc(target_surf, pygame.Color(trace_color), t.rect,\
-                        t.start_angle*math.pi/180, t.stop_angle*math.pi/180, trace_width)
                         
 class Goal(pygame.sprite.Sprite):
     def __init__(self, image):
@@ -127,12 +106,12 @@ class Goal(pygame.sprite.Sprite):
         self.image          = image
         self.image_original = self.image    #unchanging copy, for rotations
         self.rect           = image.get_rect()
-
-        self.x = random.randint(60,display_cols-60)
-        self.y = random.randint(60,display_rows-60)
+        
+        self.x = 300
+        self.y = 400
         self.rect.center = (self.x, self.y) # set starting position
         
-        if self.inObstacle:
+        if self.inObstacle():
             self.getNew()
         
     def getNew(self):
@@ -151,50 +130,46 @@ class Goal(pygame.sprite.Sprite):
             if ob.colliderect(self.rect):
                 return True
         return False
-    
-
-
+        
+class Wall(pygame.Rect):       #for now just colored rectangles
+    def __init__(self, x_topleft, y_topleft, width, height, color):
+        self.x_topleft  = x_topleft
+        self.y_topleft  = y_topleft
+        self.width      = width
+        self.height     = height
+        self.color      = pygame.Color(color)
+        self.rect       = pygame.Rect(x_topleft, y_topleft, width, height)
+        
+        
 #Create list of obstacles (walls+others)
 #First 2 args are x and y of top-left corner, next two width and height, next color
 
-w01 = Obstacle(0,0,display_cols,wall_thickness, wall_color)                          #top wall
-list_obstacles.append(w01)
-w02 = Obstacle(display_cols-wall_thickness,0,wall_thickness,display_rows,wall_color) #right wall
-list_obstacles.append(w02)
-w03 = Obstacle(0,display_rows-wall_thickness,display_cols,wall_thickness,wall_color) #bottom wall
-list_obstacles.append(w03)
-w04 = Obstacle(0,0,wall_thickness,display_rows, wall_color)                          #left wall
-list_obstacles.append(w04)
-#w05 = Obstacle(display_cols/2,display_rows/2,wall_thickness,display_rows/2,wall_color)
-#list_obstacles.append(w05)
-#w06 = Obstacle(display_cols/6,display_rows/2,display_rows/4,wall_thickness,wall_color)
-#list_obstacles.append(w06)
+w01 = Wall(0,0,display_cols,wall_thickness, wall_color)                          #top wall
+list_walls.append(w01)
+w02 = Wall(display_cols-wall_thickness,0,wall_thickness,display_rows,wall_color) #right wall
+list_walls.append(w02)
+w03 = Wall(0,display_rows-wall_thickness,display_cols,wall_thickness,wall_color) #bottom wall
+list_walls.append(w03)
+w04 = Wall(0,0,wall_thickness,display_rows, wall_color)                          #left wall
+list_walls.append(w04)
 
-
-### create random obastacles
+    
 obs = random.randint(20,70)
 for i in range(1,obs):
-    x = random.randint(30,display_cols)
-    y = random.randint(30,display_rows)
- 
-    r = random.randint(20,50)
-    obstacle = Obstacle(x,y,r,r,food_color)
+
+    x = random.randint(50,display_cols)
+    y = random.randint(50,display_rows)
+    r = random.randint(10,30)
+    obstacle = Obstacle(x,y,r,food_color)
+    
     list_obstacles.append(obstacle)
 
 
 
-#for collision-checking
-#so for speed a stripped-down list of rectangles is built:
 list_rect_obstacles = []
 for ob in list_obstacles:
     list_rect_obstacles.append(ob.rect)
     
-    for node in ob.nodes():
-        blocked_nodes.append(node)
-        
-# create manager to handle all pathing requests
-path_manager = PathManager(obstacles=blocked_nodes)
-
 
 
 class Robot(pygame.sprite.Sprite):
@@ -229,9 +204,10 @@ class Robot(pygame.sprite.Sprite):
         
         self.path           = None
         self.obsWarn        = False
-        self.frontDist      = 0.0
         
         self.userInf        = 0.0
+        
+        self.infl_obst           = []
 
         
         #these are the parameters of the range-sensing system
@@ -256,9 +232,8 @@ class Robot(pygame.sprite.Sprite):
         typically called once per frame. IMPORTANT: All actions in
         here execute AFTER the ones called directly in the event loop.
         """
-        if   (self.opmode == 0): self.mode_0_tele()     #teleop mode    
-        elif (self.opmode == 1): self.mode_1_auto()     #autonomous
-        elif (self.opmode == 2): self.mode_2_assist()   #assist 
+        if   (self.opmode == 0): self.mode_0_tele()     #teleop mode   
+        elif (self.opmode == 1): self.mode_1_auto()
         else:
             print 'ERROR! Undefined operation mode!'
             
@@ -266,252 +241,38 @@ class Robot(pygame.sprite.Sprite):
             
     def mode_0_tele(self):
         self.sense()   
+        dtheta = 0 
         if self.collided:
                 print 'update-->self.opmode==0 THAT HURT!'
                 self.collided = False
                 self.speed = 0.0
-#                
-        dtheta = 0       
-                
-                
+        
         if self.direction == 'w':
+            R =0.8
             if self.speed >-self.maxAccel:
                 self.speed -= 1
         elif self.direction == 's':
+            R = 0.8
             if self.speed < self.maxAccel:
                 self.speed += 1
         elif self.direction == 'd' or self.direction == 'a':
+            R = 0.1
             dtheta = self.rotspeed*self._d[self.direction]
-            
-            
-        if self.obsWarn :
-            if self.spin_angle_left != 0:
-                if self.speed < 0 :
-                    self.speed += 1
- 
-            elif self.speed < -4 :
-                self.speed += 1
-
-            
-            if self.frontDist < 30 or self.obsDist < 10:
-                if self.speed < 1 :
-                    self.speed += 1
-                else :
-                    self.speed = 1
-  
-    
+        else :
+            R = 1
+            self.speed = -5
         
-        dx = self.speed*math.sin(self.bearing*math.pi/180)
-        dy = self.speed*math.cos(self.bearing*math.pi/180)
-
-        self.move(dx,dy,dtheta)
-
-
-    
-    
-    ########A*########
-
-    def mode_1_auto(self):
-        """The Autonomous mode to reach the goal"""
-        self.sense()
-        dtheta = 0.0
-        global user_input
-      
-        U =user_input
+        dx,dy = self.potentialField()*R
         
-        if self.collided:
-            print 'update-->self.opmode==0 THAT HURT!'
-            self.collided = False
-            self.speed = 0.0
+        angle = math.atan2(dx,dy)* 180/math.pi + 180
+        if angle  >= 360:         #keep theta between -360..360
+            angle -= 360
+        if angle <= -360:
+            angle += 360
 
-        dtheta1 = 0.0
-        if self.direction == 'w':
-            if self.speed >-self.maxAccel:
-                self.speed -= 2*U
-        elif self.direction == 's':
-
-            if self.speed<self.maxAccel:
-                self.speed += 2*U
-        elif self.direction == 'd' or self.direction == 'a':
-            dtheta1 = U*self.rotspeed*self._d[self.direction]
-            #self.spin(dtheta)
-
-   
-
-        self.path = path_manager.generate_path((self.x,self.y),(self.goal.x,self.goal.y))      
-        debug_path = self.path.get_path()
-       # print debug_path
-        if len(debug_path) > 1:
-            current = debug_path[1]
-            dx = current[0] - self.x
-            dy = current[1] - self.y
-
-
-            angle =  round((math.atan2(dx,dy))*180/math.pi)
-            angle = angle+180
-            if angle  >= 360:         #keep theta between -360..360
-                angle -= 360
-            if angle <= -360:
-                angle += 360
-            
-            self.spin_angle_left = angle - self.bearing
-
-            
-            if self.spin_angle_left >=180.0:
-                self.spin_angle_left = self.spin_angle_left - 360.0
-            if self.spin_angle_left <=-180.0:
-                self.spin_anlge_left = self.spin_angle_left + 360.0
-
-            if self.spin_angle_left != 0:     #must finish SPIN
-                if math.fabs(self.spin_angle_left) <= self.rotspeed:
-                    dtheta = (1-U)*(sign(self.spin_angle_left))+dtheta1
-                else:
-                    dtheta = (1-U)*(sign(self.spin_angle_left)*(self.rotspeed))+dtheta1
-                    
-                if self.spin_angle_left > 45 or self.spin_angle_left < -45:
-                    if self.speed < 0 :
-                        self.speed += 1*(1-U)
-                    elif self.speed > 0:
-                        self.speed -= 1*(1-U)
-                    
-
-            if self.obsWarn :
-                print self.speed
-                if self.spin_angle_left != 0:
-                    if self.speed < 0:
-                        if self.speed > -1:
-                            self.speed = 0.0
-                        else:
-                            self.speed += 1.0
-                    
-
-     
-                elif self.speed < -4 :
-                    print 'd'
-                    self.speed += 1
-                    
-                elif self.speed > -4:
-                    print 'c'
-                    self.speed -= 1
-                    
-                elif self.frontDist < 35 :
-                    print 'a'
-                    if self.speed < 2 :
-                        self.speed += 2
-                    else :
-                        self.speed = 1
-                        
-                else:
-                    print 'b'
-                    self.speed -= 1
-                           
-            else :
-                if self.speed >-self.maxAccel :
-                    self.speed -= 1*(1-U)
-                    
-        print 'speed: ' + str(self.speed)
-        moveX = self.speed*math.sin(self.bearing*math.pi/180)
-        moveY = self.speed*math.cos(self.bearing*math.pi/180)
-        self.move(moveX,moveY,dtheta)            
-
-            
-    ########end mode_2_auto(self)########
-            
-    def mode_2_assist(self):
-        """Robot assists user to the goal"""
-        self.sense()
-        if self.collided:
-            print 'update-->self.opmode==0 THAT HURT!'
-            self.collided = False
-            self.speed = 0.0
-        
-############ potential field method
-        dtheta = 0.0
-        if self.direction == 'w':
-            R = 0.001
-            if self.speed >-self.maxAccel:
-                self.speed -= 2
-        elif self.direction == 's':
-            R = 0.001
-            if self.speed<self.maxAccel:
-                self.speed += 2
-        elif self.direction == 'd' or self.direction == 'a':
-            R = 0.001
-            dtheta = self.rotspeed*self._d[self.direction]
-            self.spin(dtheta)
-        else:
-            R = 10
-            
-            
-        avoidX = 0
-        avoidY = 0
-        C = 0.01
-        
-#        for obs in list_obstacles:
-#            center = obs.rect.center
-#            d = math.sqrt(math.pow(self.x-(center[0]+obs.width/2),2)+math.pow(self.y-(center[1]+obs.width/2),2))
-#            obs.force = R * math.exp(-C*d)
-#            dx = center[0] - self.x
-#            dy = center[1] - self.y
-#            
-#            angle =  round((math.atan2(dx,dy)))
-#            obs.theta = self.bearing*math.pi/180 - angle
-#            
-#            avoidX += obs.force * math.cos(obs.theta)
-#            avoidY += obs.force * math.sin(obs.theta)
-        
-        
-        RadiusOfInfluence = 50.0
-        self.infl_obst = []
-        
-        for ob in list_obstacles:
-            ob.dist = math.sqrt(math.pow(self.x - ob.x,2)+math.pow(self.y - ob.y,2))
-            if ob.dist < (RadiusOfInfluence): 
-                self.infl_obst.append(ob)
-            
-            
-        if self.infl_obst != []:
-            for obs in self.infl_obst:
-                center = obs.rect.center
-                d = math.sqrt(math.pow(self.x-(center[0]+obs.width/2),2)+math.pow(self.y-(center[1]+obs.width/2),2))
-                obs.force = R * math.exp(-C*d)
-                dx = center[0] - self.x
-                dy = center[1] - self.y
-            
-                angle =  round((math.atan2(dx,dy)))
-                obs.theta = self.bearing*math.pi/180 - angle
-            
-                avoidX += obs.force * math.cos(obs.theta)
-                avoidY += obs.force * math.sin(obs.theta)
-
-        moveY = self.x 
-        moveX = self.y 
-
-        angle =  round((math.atan2(moveY,moveX))*180/math.pi)
-  
-        Fa               = 100
-        Va              = .1
-        Vr              = .1        
-        Sa              = .1
-        Sr              = 1
-        velA = -Fa * Va * math.cos((angle-self.bearing)*math.pi/180)
-
-        if  velA - Vr *  avoidX < 0  :
-            if self.speed >-self.maxAccel :
-                self.speed -= 1
-        elif velA - Vr *  avoidX > 0  :
-            if self.speed < 5 :
-                self.speed += 1        
-        
-        #turnAvoid =  int(Fa * Sa* math.sin((angle-self.bearing)*math.pi/180) - Sr * avoidY)
-        #turnAvoid = int(- Sr * avoidY)
-        
-        print self.speed
-        #print turnAvoid
-        
-        self.spin_angle_left = 0 
-        
-        
+        self.spin_angle_left = int(angle) - self.bearing
+          
+         
         if self.spin_angle_left >=180.0:
             self.spin_angle_left = self.spin_angle_left - 360.0
         if self.spin_angle_left <=-180.0:
@@ -519,33 +280,143 @@ class Robot(pygame.sprite.Sprite):
 
         if self.spin_angle_left != 0:     #must finish SPIN
             if math.fabs(self.spin_angle_left) <= self.rotspeed:
-                dtheta = (sign(self.spin_angle_left))
+                dtheta += (sign(self.spin_angle_left))
             else:
-                dtheta = (sign(self.spin_angle_left)*(self.rotspeed))
+                dtheta += (sign(self.spin_angle_left)*(self.rotspeed))*R
+                
 
-   
-        dx = self.speed*math.sin(self.bearing*math.pi/180)
-        dy = self.speed*math.cos(self.bearing*math.pi/180)
+        movex = self.speed*math.sin(self.bearing*math.pi/180)
+        movey = self.speed*math.cos(self.bearing*math.pi/180)
+        self.move(movex,movey,dtheta)
         
-        x = dx
-        y = dy
-        self.move(x,y,dtheta)
+        
+    def mode_1_auto(self):
+        self.sense()   
+        dtheta = 0 
+        global user_input
+        if user_input > 1:
+            user_input = 1
+
+        if self.collided:
+                print 'update-->self.opmode==0 THAT HURT!'
+                self.collided = False
+                self.speed = 0.0
+        
+        if self.direction == 'w':
+            U =1-user_input
+            if self.speed >-self.maxAccel:
+                self.speed -= 1
+        elif self.direction == 's':
+            U = 1-user_input
+            if self.speed < self.maxAccel:
+                self.speed += 1
+        elif self.direction == 'd' or self.direction == 'a':
+            U = 0.1
+            dtheta = self.rotspeed*self._d[self.direction]
+        else :
+            U = 1
             
-    def showGoalPath(self,target_surf):
-        if self.path:
-            for node in self.path.get_closed_nodes():
-                pygame.draw.circle(target_surf, (255, 0, 0), node, 1, 1)
-            for node in self.path.get_open_nodes():
-                pygame.draw.circle(target_surf, (255, 255, 0), node, 1, 1)
         
+        dx,dy = self.potentialField()*U
         
+        angle = math.atan2(dx,dy)* 180/math.pi + 180
+        if angle  >= 360:         #keep theta between -360..360
+            angle -= 360
+        if angle <= -360:
+            angle += 360
+
+        self.spin_angle_left = int(angle) - self.bearing
+          
+         
+        if self.spin_angle_left >=180.0:
+            self.spin_angle_left = self.spin_angle_left - 360.0
+        if self.spin_angle_left <=-180.0:
+            self.spin_anlge_left = self.spin_angle_left + 360.0
+
+        if self.spin_angle_left != 0:     #must finish SPIN
+            if math.fabs(self.spin_angle_left) <= self.rotspeed:
+                dtheta += (sign(self.spin_angle_left))
+            else:
+                dtheta += (sign(self.spin_angle_left)*(self.rotspeed))*U
+        print self.spin_angle_left        
+        if self.obsWarn :
+
+            if self.spin_angle_left != 0:
+                if self.speed < 0 :
+                    self.speed += 2
+                    
+            elif self.speed < -2 :
+                 self.speed += 4
+            else :
+                self.speed = -2
+               
+                if self.obsDist < 20:
+                    if self.speed < 6 :
+                        self.speed += 6
+                    else :
+                        self.speed = 6
+                        
+                         
+        else :
+            if self.spin_angle_left > 45:
+                if self.speed < -2 :
+                    self.speed += 2 
+                    print 'here is the prob'
+            else:
+
+                if self.speed >-self.maxAccel :
+                    self.speed -= 1
+                    
+        print self.speed
+        movex = self.speed*math.sin(self.bearing*math.pi/180)
+        movey = self.speed*math.cos(self.bearing*math.pi/180)
+        self.move(movex,movey,dtheta)
+
+
+    def potentialField(self):
+        RadiusOfInfluence   = 200.0
+        Kobjs               = 100000
+        Kgoal               = 5
+        self.infl_obst = []
+        for ob in list_obstacles:
+            ob.dist = math.sqrt(math.pow(self.x - ob.x,2)+math.pow(self.y - ob.y,2))
+            if ob.dist < (RadiusOfInfluence): 
+                self.infl_obst.append(ob)
+        Distance = np.zeros((1,len(self.infl_obst)))
+        V        = np.zeros((2,len(self.infl_obst)))
+        count = 0
+        if self.infl_obst != []:
+            for ob in self.infl_obst:
+                Distance[0][count] = ob.dist - ob.r
+                V[0][count]     = ob.x - self.x 
+                V[1][count]     = ob.y - self.y
+                count +=1
             
+            rho = np.repeat(Distance,2,0)
+            DrhoDx = -V/rho
+            F = (1/rho - 1/RadiusOfInfluence)* 1/np.square(rho)*DrhoDx
+            FObjects = Kobjs*numpy.sum(F) 
+            
+        else :
+            FObjects = np.array((0,0))
+            
+        GoalError = np.array([self.goal.x - self.x, self.goal.y - self.y])
+        normGoal = (math.sqrt(math.pow(GoalError[0],2)+math.pow(GoalError[1],2)))
+        Fgoal = Kgoal * GoalError/normGoal
+        Ftotal = Fgoal + FObjects
+        normTotal = (math.sqrt(math.pow(Ftotal[0],2)+math.pow(Ftotal[1],2)))
+        Magnitude = numpy.min((1,normTotal))
+        Ftotal = Ftotal/normTotal * Magnitude
+        return Ftotal
+        
+        
+    
         
     def move(self,dx,dy,dtheta):
         self.spin(dtheta)
-        previous_rect = self.rect           #re1member in case undo is necessary       
+        previous_rect = self.rect           # in case undo is necessary       
         self.rect = self.rect.move(dx,dy)
-        if self.rect.collidelist(list_rect_obstacles) != -1:#if collision exists
+        if self.rect.collidelist(list_rect_obstacles) != -1 or self.rect.collidelist(list_walls) != -1:#if collision exists
             print 'mode  -->I collided with wall(s)',\
                   self.rect.collidelistall(list_rect_obstacles)
             self.rect = previous_rect                   #undo the move
@@ -575,7 +446,7 @@ class Robot(pygame.sprite.Sprite):
     #this function's job is to place in self.retina the range sensed by each sensor
     def sense(self):
         self.obsWarn = False
-        self.obsDist = 500.0
+        self.obsDist = 200.0
         n = (self.nr_sensors - 1)/2     #the "natural" sensor range is -n to +n
         granu = r_visual_granularity    #must be at least as large as the wall thickness!!
         for i in range(-n,n+1):         #sense with each of the 2n+1 range sensors
@@ -587,15 +458,19 @@ class Robot(pygame.sprite.Sprite):
                 count = -1          #needed to coordinate the two lists, to extract color after loop
                 for ob in list_rect_obstacles:  #use the stripped-down list of rectangles for speed
                     count = count + 1
-                    if i == 0:
-                        #minDist = math.sqrt(math.pow(self.rect.center[0] - ob.center[0],2) + math.pow(self.rect.center[1] - ob.center[1],2))
-                        minDist = distance 
-                        if minDist < self.obsDist:
-                            self.obsDist = minDist
+                    minDist = math.sqrt(math.pow(self.rect.center[0] - ob.center[0],2) + math.pow(self.rect.center[1] - ob.center[1],2))
+                    if minDist < self.obsDist:
+                        self.obsDist = minDist
         
                     if ob.collidepoint(x,y):
                         nr_collisions = 1
                         break       #breaks out of wall loop
+                        
+                for ob in list_walls:  #use the stripped-down list of rectangles for speed
+                    if ob.collidepoint(x,y):
+                        nr_collisions = 1
+                        break       #breaks out of wall loop
+                        
                 if nr_collisions:   #non-zero collision
                     break           #breaks out of distance loop
                     
@@ -609,7 +484,6 @@ class Robot(pygame.sprite.Sprite):
             if nr_collisions:       #nr_collisions is 1 if a collision has occurred
                 if i == 0:
                     self.obsWarn = True
-                    self.frontDist = self.retina[i+n][0]
                 self.retina[i+n][1] = list_obstacles[count].color #color comes form the larger list
             else:
                 self.retina[i+n][1] = pygame.Color(color_of_nothing)
@@ -671,20 +545,19 @@ def main():
         s = pygame.display.get_surface()
         s.fill(ob.color, list_rect_obstacles[count])
     r.draw_rays(screen) 
-    r.showGoalPath(screen)
     pygame.display.flip() 
     
 
     going = True
     time_down = 0.0
     time_elapsed = 0.0
-    T = -1
+    
     
     while going:
         clock.tick(fps)      #at most that many fps
 
         #Event loop################################
-        global user_input
+
         for event in pygame.event.get():
             if event == QUIT:
                 going = False
@@ -693,52 +566,29 @@ def main():
                     going = False
                     
                     
+                time_down = pygame.time.get_ticks()
                     
-                elif event.key == K_w:
-                    T = 1
+                if event.key == K_w:
                     r.direction = 'w'
                 elif event.key == K_d:
-                    T = 1
                     r.direction = 'd'
                 elif event.key == K_a:
-                    T = 1
                     r.direction = 'a'
                 elif event.key == K_s:
-                    T = 1
                     r.direction = 's'
-
-  
-                time_down = pygame.time.get_ticks() 
-                
-                
+                    
                
                 if event.key == K_SPACE:
                     r.opmode = 0            #teleop mode
                     caption = sim_version + ' \tmode: teleoperation  '
                 if event.key == K_1:
                     r.opmode = 1            #autonomous navigation mode
-                    caption = (sim_version + ' \tmode: autonomous  ')
-                if event.key == K_2:
-                    r.opmode = 2            #autonomous navigation mode
-                    caption = (sim_version + ' \tmode: assist  ')
-                    
-                                    
-                    
-                    
-                if event.key == K_t:        #toggles the tracing mode
-                    if leave_trace:
-                        leave_trace = 0
-                        list_traces = list()
-                        print 'changing leave_trace from 1 to 0'
-                    else:
-                        leave_trace = 1
-                        print 'changing leave_trace from 0 to 1'
-                        
-            
+                    caption = (sim_version + ' \tmode: autonomous  ')  
+                
+               
             elif event.type == KEYUP:
-                time_down = 0.0
-                time_elapsed = 0.0
-                T = -1
+                time_elapsed = (pygame.time.get_ticks() - time_down)/1000.0                
+                
                 if event.key == K_w:
                     r.direction = 'N'
                 elif event.key == K_d:
@@ -747,37 +597,23 @@ def main():
                     r.direction = 'N'
                 elif event.key == K_s:
                     r.direction = 'N'
-                    
-       
-            time_elapsed = (pygame.time.get_ticks() - time_down)/10000.0        
-            
-        user_input += T*0.1
 
-        if user_input > 1.0:
-            user_input = 1.0
-        elif user_input < 0.0:
-            user_input = 0.0
-        print user_input
+            global user_input
+            user_input  = time_elapsed * 0.5
                 
         pygame.display.set_caption(caption + str(time.time() - startTime))
-                        
-        if r.speed > 0.0:
-            r.speed -= 0.5
-        elif r.speed < 0.0:
-            r.speed += 0.5
-            
-        
-            
+     
         # Find if goal reached 
         if pygame.sprite.spritecollide(r, goalSprite, False) != []:
             print 'You made it to the goal'
             goal.getNew()
             startTime = time.time()
-
             
-        
-        
-            
+        if r.speed > 0.0:
+            r.speed -= 0.5
+        elif r.speed < 0.0:
+            r.speed += 0.5
+ 
         
         robotSprite.update()
         goalSprite.update()
@@ -785,20 +621,22 @@ def main():
         #screen.fill((255,255,255)) # white background
         #screen.blit(red_block, (100,100))
         count = -1
+        
         for ob in list_obstacles:
             count = count + 1
             s = pygame.display.get_surface()
-            s.fill(ob.color, list_rect_obstacles[count])
-        r.draw_rays(screen)
-        r.showGoalPath(screen)
-#       
-        
-        draw_traces(screen)
+            s.fill(ob.color,list_rect_obstacles[count])
+        count = -1
+        for ob in list_walls:
+            count = count + 1
+            s = pygame.display.get_surface()
+            s.fill(ob.color, list_walls[count])
+
+        r.draw_rays(screen) 
         robotSprite.draw(screen)
         goalSprite.draw(screen)
         
-
-        
+       
         #pygame.display.update()
         pygame.display.flip()   #all changes are drawn at once (double buffer)
         #pygame.time.delay(100)

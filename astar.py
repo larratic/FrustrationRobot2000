@@ -38,7 +38,7 @@ class PathManager:
             context_node = path.first_open_node()
             path.remove_open_set(context_node)
             path.add_closed_set(context_node)
-            for neighbor_node in self.path_map.get_neighbor_nodes(context_node, step=5):
+            for neighbor_node in self.path_map.get_neighbor_nodes(context_node, step=15):
                 if path.contains_closed_set(neighbor_node):
                     continue
                 if path.close_enough(neighbor_node, to_node):
@@ -132,7 +132,7 @@ class Path:
     def close_enough(self, from_node, to_node):
         dx = int(from_node[0] - to_node[0])
         dy = int(from_node[1] - to_node[1])
-        return (dx ** 2 + dy ** 2) <= 50
+        return (dx ** 2 + dy ** 2) <= 100
 
 
 class PathMap:
