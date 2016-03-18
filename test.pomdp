@@ -1,0 +1,31 @@
+#This is the test POMDP 
+ 
+discount: 0.95
+values: reward
+states: beginner expert 
+actions: high-autonomy low-autonomy 
+observations: no-hit hit 
+start: uniform 
+ 
+T:high-autonomy
+0.8 0.2 
+0.8 0.2 
+
+T:low-autonomy
+0.8 0.2 
+0.8 0.2 
+
+O:high-autonomy
+0.3 0.7 
+ 
+O:low-autonomy
+0.99 0.01 
+ 
+R:high-autonomy : beginner :  * : no-hit 1
+R:high-autonomy : beginner :  * : hit 2
+R:high-autonomy : expert :  * : no-hit 3
+R:high-autonomy : expert :  * : hit 4
+R:low-autonomy : beginner :  * : no-hit 5
+R:low-autonomy : beginner :  * : hit 6
+R:low-autonomy : expert :  * : no-hit 7
+R:low-autonomy : expert :  * : hit 8
