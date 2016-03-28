@@ -30,7 +30,7 @@ r_init_y         = 30
 r_init_fwd_speed = 5        #pixels per simulation cycle
 r_init_spin_speed= 3        #degrees per simulation cycle
 r_transparency   = 0       #0 is totally transp., 255 totally opaque
-r_visual_range   = 100      #measured from robot center
+r_visual_range   = 50      #measured from robot center
 r_visual_angle   = 30       #in degrees, must divide 90 exactly!
 r_visual_granularity = 5    #must be < wall_thickness for walls to be detected correctly!
 
@@ -55,6 +55,15 @@ import time
 import numpy
 from astar import PathManager
 from HMM import HMM
+from pomdp import *
+
+#POMDP files
+filename_env =  'POMDP/test.pomdp'
+filename_policy = 'POMDP/out.policy'
+pomdp = POMDP(filename_env, filename_policy, np.array([[0],[0],[0],[0.5],[0],[0],[0],[0.5]]))
+
+
+
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 screen = pygame.display.set_mode((display_cols, display_rows))
@@ -183,8 +192,8 @@ list_obstacles.append(w04)
 ### create random obastacles
 obs = random.randint(20,70)
 for i in range(1,obs):
-    x = random.randint(30,display_cols)
-    y = random.randint(30,display_rows)
+    x = random.randint(100,display_cols)
+    y = random.randint(100,display_rows)
  
     r = random.randint(20,50)
     obstacle = Obstacle(x,y,r,r,food_color)
@@ -268,6 +277,7 @@ class Robot(pygame.sprite.Sprite):
         if   (self.opmode == 0): self.mode_0_tele()     #teleop mode    
         elif (self.opmode == 1): self.mode_1_auto()     #autonomous
         elif (self.opmode == 2): self.mode_2_assist()   #assist 
+        elif (self.opmode == 3): self.mode_3_pomdp()   #assist 
         else:
             print 'ERROR! Undefined operation mode!'
             
@@ -295,19 +305,7 @@ class Robot(pygame.sprite.Sprite):
         elif self.direction == 'd' or self.direction == 'a':
             dtheta = self.rotspeed*self._d[self.direction]
             
-            
-#        if self.obsWarn :
-#            if self.spin_angle_left != 0:
-#                if self.speed < 0 :
-#                    self.speed += 1
-# 
-#            elif self.speed < -4 :
-#                print self.obsDist
-#                self.speed += 1/self.frontDist
-#                print self.speed
-  
-    
-        
+          
         dx = self.speed*math.sin(self.bearing*math.pi/180)
         dy = self.speed*math.cos(self.bearing*math.pi/180)
 
@@ -505,6 +503,65 @@ class Robot(pygame.sprite.Sprite):
         movey = self.speed*math.cos(self.bearing*math.pi/180)
         self.move(movex,movey,dtheta)
         
+    def mode_3_pomdp(self):
+      global pomdp
+      action = pomdp.get_best_action()[0]
+      observation = 4
+      self.sense()   
+      if self.collided:
+          print 'update-->self.opmode==0 THAT HURT!'
+          self.collided = False
+          self.speed = 0.0
+          observation = 1
+          
+      
+      if self.retina[1][0] < 50:
+        observation = 1
+      elif self.retina[5][0] < 50:
+        observation = 2
+      elif self.retina[3][0] < 50:
+        observation = 3
+
+      
+      dtheta = 0       
+              
+      pomdp.update_belief(action,observation)
+      print 'Most likely state: ' + pomdp.pomdpenv.states[np.argmax(pomdp.belief)]
+      print 'Action: ' + pomdp.pomdpenv.actions[action]
+      
+      
+
+
+      if self.direction == 'w':
+          if self.speed >-self.maxAccel:
+              self.speed -= 1
+      elif self.direction == 's':
+          if self.speed < self.maxAccel:
+              self.speed += 1
+      elif self.direction == 'd' or self.direction == 'a':
+          dtheta = self.rotspeed*self._d[self.direction]
+      
+      if action == 0:
+        dtheta += 10
+        
+      elif action == 1:
+         dtheta -= 10
+        
+      dx = self.speed*math.sin(self.bearing*math.pi/180)
+      dy = self.speed*math.cos(self.bearing*math.pi/180)
+
+      self.move(dx,dy,dtheta)
+      
+      
+
+#    def pomdpActions(self,action):
+#      if action == 0:
+#        #turn left
+#      elif action == 1:
+#        #turn right
+#      elif action == 2:
+#        #do nothing
+#        
         
         
     # show the path for A*        
@@ -654,7 +711,7 @@ def load_image(name):
 ###########################################
 ###########################################
 def main():
-    global leave_trace, list_traces
+    global leave_trace, list_traces,pomdp
     if r_visual_granularity > wall_thickness:
         print 'PARAMETER ERROR: r_visual_granularity exceeds wall_thickness!'
         print 'This can cause wall detection errors!'
@@ -698,10 +755,10 @@ def main():
     T = -1
     
     #HMM initalize  
-    hmm = HMM()
-    hmm.pi = np.array([0.5, 0.5])
-    hmm.A = np.array([[0.5, 0.5],[0.5, 0.5]])
-    hmm.B = np.array([[0.3, 0.7],[0.99, 0.01]])
+#    hmm = HMM()
+#    hmm.pi = np.array([0.5, 0.5])
+#    hmm.A = np.array([[0.5, 0.5],[0.5, 0.5]])
+#    hmm.B = np.array([[0.3, 0.7],[0.99, 0.01]])
     
     
     while going:
@@ -750,6 +807,9 @@ def main():
                 if event.key == K_2:
                     r.opmode = 2            #autonomous navigation mode
                     caption = (sim_version + ' \tmode: assist  ')
+                if event.key == K_3:
+                    r.opmode = 3            #autonomous navigation mode
+                    caption = (sim_version + ' \tmode: pomdp  ')
                     
                                     
                     
@@ -795,7 +855,7 @@ def main():
             user_input = 0.0
 
                 
-        pygame.display.set_caption(caption + str(totalUserInput))
+        pygame.display.set_caption(caption)
                         
         if r.speed > 0.0:
             r.speed -= 0.5
@@ -808,22 +868,19 @@ def main():
         if pygame.sprite.spritecollide(r, goalSprite, False) != []:    
             print 'You made it to the goal'
             R=R+1
+            pomdp.update_belief(0,5)
             print o
-            if R == numTrials:
-                hmm.train(o,0.0001,graphics=False)
-                print 'probabilities\n',hmm.pi
-                print 'state transition probabililities\n',hmm.A
-                print 'observation probabililities\n',hmm.B
-                R = 0
-                o = np.zeros(numTrials)
+#            if R == numTrials:
+#                hmm.train(o,0.0001,graphics=False)
+#                print 'probabilities\n',hmm.pi
+#                print 'state transition probabililities\n',hmm.A
+#                print 'observation probabililities\n',hmm.B
+#                R = 0
+#                o = np.zeros(numTrials)
             goal.getNew()
             startTime = time.time()
 
-            
-        
-        
-            
-        
+  
         robotSprite.update()
         goalSprite.update()
         screen.blit(background, (0, 0))  #redraws the entire bkgrnd.
