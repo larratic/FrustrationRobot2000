@@ -484,7 +484,7 @@ class Robot(pygame.sprite.Sprite):
         
 
     def potentialField(self):
-        RadiusOfInfluence   = 100.0
+        RadiusOfInfluence   = 50.0
         Kobjs               = 5000
         Kgoal               = 1
         self.infl_obst = []

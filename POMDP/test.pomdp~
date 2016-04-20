@@ -6,6 +6,7 @@ states: BL BR BA BF EL ER EA EF
 actions: turn-left turn-right doNothing 
 observations: hit obsL obsR obsA obsF atGoal 
 
+ 
 T: turn-left
 0.2 0.05 0.49 0.1 0.05 0.0 0.1 0.01 
 0.01 0.2 0.1 0.49 0.0 0.06 0.04 0.1 
@@ -37,176 +38,176 @@ T: doNothing
 0.015 0.015 0.015 0.2 0.045 0.045 0.045 0.62 
 
 O: turn-left
-0.03 0.8 0.01 0.1 0.01 0.05 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
-0.01 0.9 0.001 0.005 0.05 0.034 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
+0.03	0.8	0.01	0.1	0.01	0.05
+0.03	0.01	0.8	0.1	0.01	0.05
+0.04	0.05	0.05	0.8	0.01	0.05
+0.01	0.02	0.02	0.02	0.8	0.13
+0.01	0.9	0.001	0.005	0.05	0.034
+0.001	0.01	0.9	0.005	0.05	0.034
+0.01	0.025	0.025	0.9	0	0.04
+0.0001	0.025	0.025	0.0001	0.9	0.0498
 
 O: turn-right
-0.03 0.8 0.01 0.1 0.01 0.05 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
-0.01 0.9 0.001 0.005 0.05 0.034 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
+0.03	0.8	0.01	0.1	0.01	0.05
+0.03	0.01	0.8	0.1	0.01	0.05
+0.04	0.05	0.05	0.8	0.01	0.05
+0.01	0.02	0.02	0.02	0.8	0.13
+0.01	0.9	0.001	0.005	0.05	0.034
+0.001	0.01	0.9	0.005	0.05	0.034
+0.01	0.025	0.025	0.9	0	0.04
+0.0001	0.025	0.025	0.0001	0.9	0.0498
 
 O: doNothing
-0.03 0.8 0.01 0.1 0.01 0.05 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
-0.01 0.9 0.001 0.005 0.05 0.034 
-0.03 0.01 0.8 0.1 0.01 0.05 
-0.04 0.05 0.05 0.8 0.01 0.05 
-0.01 0.02 0.02 0.02 0.8 0.13 
+0.03	0.8	0.01	0.1	0.01	0.05
+0.03	0.01	0.8	0.1	0.01	0.05
+0.04	0.05	0.05	0.8	0.01	0.05
+0.01	0.02	0.02	0.02	0.8	0.13
+0.01	0.9	0.001	0.005	0.05	0.034
+0.001	0.01	0.9	0.005	0.05	0.034
+0.01	0.025	0.025	0.9	0	0.04
+0.0001	0.025	0.025	0.0001	0.9	0.0498
 
 R: turn-left : BL :  * : hit -100
-R: turn-left : BL :  * : obsL 0
-R: turn-left : BL :  * : obsR 0
-R: turn-left : BL :  * : obsA 0
-R: turn-left : BL :  * : obsF 0
+R: turn-left : BL :  * : obsL -10
+R: turn-left : BL :  * : obsR -10
+R: turn-left : BL :  * : obsA -20
+R: turn-left : BL :  * : obsF -1
 R: turn-left : BL :  * : atGoal 1000
 R: turn-left : BR :  * : hit -100
-R: turn-left : BR :  * : obsL 0
-R: turn-left : BR :  * : obsR 0
-R: turn-left : BR :  * : obsA 0
-R: turn-left : BR :  * : obsF 0
+R: turn-left : BR :  * : obsL -10
+R: turn-left : BR :  * : obsR -10
+R: turn-left : BR :  * : obsA -20
+R: turn-left : BR :  * : obsF -1
 R: turn-left : BR :  * : atGoal 1000
 R: turn-left : BA :  * : hit -100
-R: turn-left : BA :  * : obsL 0
-R: turn-left : BA :  * : obsR 0
-R: turn-left : BA :  * : obsA 0
-R: turn-left : BA :  * : obsF 0
+R: turn-left : BA :  * : obsL -10
+R: turn-left : BA :  * : obsR -10
+R: turn-left : BA :  * : obsA -20
+R: turn-left : BA :  * : obsF -1
 R: turn-left : BA :  * : atGoal 1000
 R: turn-left : BF :  * : hit -100
-R: turn-left : BF :  * : obsL 0
-R: turn-left : BF :  * : obsR 0
-R: turn-left : BF :  * : obsA 0
-R: turn-left : BF :  * : obsF 0
+R: turn-left : BF :  * : obsL -10
+R: turn-left : BF :  * : obsR -10
+R: turn-left : BF :  * : obsA -20
+R: turn-left : BF :  * : obsF -1
 R: turn-left : BF :  * : atGoal 1000
 R: turn-left : EL :  * : hit -100
-R: turn-left : EL :  * : obsL 0
-R: turn-left : EL :  * : obsR 0
-R: turn-left : EL :  * : obsA 0
-R: turn-left : EL :  * : obsF 0
+R: turn-left : EL :  * : obsL -10
+R: turn-left : EL :  * : obsR -10
+R: turn-left : EL :  * : obsA -20
+R: turn-left : EL :  * : obsF -1
 R: turn-left : EL :  * : atGoal 1000
 R: turn-left : ER :  * : hit -100
-R: turn-left : ER :  * : obsL 0
-R: turn-left : ER :  * : obsR 0
-R: turn-left : ER :  * : obsA 0
-R: turn-left : ER :  * : obsF 0
+R: turn-left : ER :  * : obsL -10
+R: turn-left : ER :  * : obsR -10
+R: turn-left : ER :  * : obsA -20
+R: turn-left : ER :  * : obsF -1
 R: turn-left : ER :  * : atGoal 1000
 R: turn-left : EA :  * : hit -100
-R: turn-left : EA :  * : obsL 0
-R: turn-left : EA :  * : obsR 0
-R: turn-left : EA :  * : obsA 0
-R: turn-left : EA :  * : obsF 0
+R: turn-left : EA :  * : obsL -10
+R: turn-left : EA :  * : obsR -10
+R: turn-left : EA :  * : obsA -20
+R: turn-left : EA :  * : obsF -1
 R: turn-left : EA :  * : atGoal 1000
 R: turn-left : EF :  * : hit -100
-R: turn-left : EF :  * : obsL 0
-R: turn-left : EF :  * : obsR 0
-R: turn-left : EF :  * : obsA 0
-R: turn-left : EF :  * : obsF 0
+R: turn-left : EF :  * : obsL -10
+R: turn-left : EF :  * : obsR -10
+R: turn-left : EF :  * : obsA -20
+R: turn-left : EF :  * : obsF -1
 R: turn-left : EF :  * : atGoal 1000
 R: turn-right : BL :  * : hit -100
-R: turn-right : BL :  * : obsL 0
-R: turn-right : BL :  * : obsR 0
-R: turn-right : BL :  * : obsA 0
-R: turn-right : BL :  * : obsF 0
+R: turn-right : BL :  * : obsL -10
+R: turn-right : BL :  * : obsR -10
+R: turn-right : BL :  * : obsA -20
+R: turn-right : BL :  * : obsF -1
 R: turn-right : BL :  * : atGoal 1000
-R: turn-right : BR :  * : hit 0
-R: turn-right : BR :  * : obsL 0
-R: turn-right : BR :  * : obsR 0
-R: turn-right : BR :  * : obsA 0
-R: turn-right : BR :  * : obsF 0
+R: turn-right : BR :  * : hit -100
+R: turn-right : BR :  * : obsL -10
+R: turn-right : BR :  * : obsR -10
+R: turn-right : BR :  * : obsA -20
+R: turn-right : BR :  * : obsF -1
 R: turn-right : BR :  * : atGoal 1000
 R: turn-right : BA :  * : hit -100
-R: turn-right : BA :  * : obsL 0
-R: turn-right : BA :  * : obsR 0
-R: turn-right : BA :  * : obsA 0
-R: turn-right : BA :  * : obsF 0
+R: turn-right : BA :  * : obsL -10
+R: turn-right : BA :  * : obsR -10
+R: turn-right : BA :  * : obsA -20
+R: turn-right : BA :  * : obsF -1
 R: turn-right : BA :  * : atGoal 1000
-R: turn-right : BF :  * : hit 0
-R: turn-right : BF :  * : obsL 0
-R: turn-right : BF :  * : obsR 0
-R: turn-right : BF :  * : obsA 0
-R: turn-right : BF :  * : obsF 0
+R: turn-right : BF :  * : hit -100
+R: turn-right : BF :  * : obsL -10
+R: turn-right : BF :  * : obsR -10
+R: turn-right : BF :  * : obsA -20
+R: turn-right : BF :  * : obsF -1
 R: turn-right : BF :  * : atGoal 1000
 R: turn-right : EL :  * : hit -100
-R: turn-right : EL :  * : obsL 0
-R: turn-right : EL :  * : obsR 0
-R: turn-right : EL :  * : obsA 0
-R: turn-right : EL :  * : obsF 0
+R: turn-right : EL :  * : obsL -10
+R: turn-right : EL :  * : obsR -10
+R: turn-right : EL :  * : obsA -20
+R: turn-right : EL :  * : obsF -1
 R: turn-right : EL :  * : atGoal 1000
-R: turn-right : ER :  * : hit 0
-R: turn-right : ER :  * : obsL 0
-R: turn-right : ER :  * : obsR 0
-R: turn-right : ER :  * : obsA 0
-R: turn-right : ER :  * : obsF 0
+R: turn-right : ER :  * : hit -100
+R: turn-right : ER :  * : obsL -10
+R: turn-right : ER :  * : obsR -10
+R: turn-right : ER :  * : obsA -20
+R: turn-right : ER :  * : obsF -1
 R: turn-right : ER :  * : atGoal 1000
 R: turn-right : EA :  * : hit -100
-R: turn-right : EA :  * : obsL 0
-R: turn-right : EA :  * : obsR 0
-R: turn-right : EA :  * : obsA 0
-R: turn-right : EA :  * : obsF 0
+R: turn-right : EA :  * : obsL -10
+R: turn-right : EA :  * : obsR -10
+R: turn-right : EA :  * : obsA -20
+R: turn-right : EA :  * : obsF -1
 R: turn-right : EA :  * : atGoal 1000
 R: turn-right : EF :  * : hit -100
-R: turn-right : EF :  * : obsL 0
-R: turn-right : EF :  * : obsR 0
-R: turn-right : EF :  * : obsA 0
-R: turn-right : EF :  * : obsF 0
+R: turn-right : EF :  * : obsL -10
+R: turn-right : EF :  * : obsR -10
+R: turn-right : EF :  * : obsA -20
+R: turn-right : EF :  * : obsF -1
 R: turn-right : EF :  * : atGoal 1000
 R: doNothing : BL :  * : hit -100
-R: doNothing : BL :  * : obsL 0
-R: doNothing : BL :  * : obsR 0
-R: doNothing : BL :  * : obsA 0
-R: doNothing : BL :  * : obsF 0
+R: doNothing : BL :  * : obsL -10
+R: doNothing : BL :  * : obsR -10
+R: doNothing : BL :  * : obsA -20
+R: doNothing : BL :  * : obsF -1
 R: doNothing : BL :  * : atGoal 1000
-R: doNothing : BR :  * : hit 0
-R: doNothing : BR :  * : obsL 0
-R: doNothing : BR :  * : obsR 0
-R: doNothing : BR :  * : obsA 0
-R: doNothing : BR :  * : obsF 0
+R: doNothing : BR :  * : hit -100
+R: doNothing : BR :  * : obsL -10
+R: doNothing : BR :  * : obsR -10
+R: doNothing : BR :  * : obsA -20
+R: doNothing : BR :  * : obsF -1
 R: doNothing : BR :  * : atGoal 1000
 R: doNothing : BA :  * : hit -100
-R: doNothing : BA :  * : obsL 0
-R: doNothing : BA :  * : obsR 0
-R: doNothing : BA :  * : obsA 0
-R: doNothing : BA :  * : obsF 0
+R: doNothing : BA :  * : obsL -10
+R: doNothing : BA :  * : obsR -10
+R: doNothing : BA :  * : obsA -20
+R: doNothing : BA :  * : obsF -1
 R: doNothing : BA :  * : atGoal 1000
 R: doNothing : BF :  * : hit -100
-R: doNothing : BF :  * : obsL 0
-R: doNothing : BF :  * : obsR 0
-R: doNothing : BF :  * : obsA 0
-R: doNothing : BF :  * : obsF 0
+R: doNothing : BF :  * : obsL -10
+R: doNothing : BF :  * : obsR -10
+R: doNothing : BF :  * : obsA -20
+R: doNothing : BF :  * : obsF -1
 R: doNothing : BF :  * : atGoal 1000
 R: doNothing : EL :  * : hit -100
-R: doNothing : EL :  * : obsL 0
-R: doNothing : EL :  * : obsR 0
-R: doNothing : EL :  * : obsA 0
-R: doNothing : EL :  * : obsF 0
+R: doNothing : EL :  * : obsL -10
+R: doNothing : EL :  * : obsR -10
+R: doNothing : EL :  * : obsA -20
+R: doNothing : EL :  * : obsF -1
 R: doNothing : EL :  * : atGoal 1000
-R: doNothing : ER :  * : hit 0
-R: doNothing : ER :  * : obsL 0
-R: doNothing : ER :  * : obsR 0
-R: doNothing : ER :  * : obsA 0
-R: doNothing : ER :  * : obsF 0
+R: doNothing : ER :  * : hit -100
+R: doNothing : ER :  * : obsL -10
+R: doNothing : ER :  * : obsR -10
+R: doNothing : ER :  * : obsA -20
+R: doNothing : ER :  * : obsF -1
 R: doNothing : ER :  * : atGoal 1000
 R: doNothing : EA :  * : hit -100
-R: doNothing : EA :  * : obsL 0
-R: doNothing : EA :  * : obsR 0
-R: doNothing : EA :  * : obsA 0
-R: doNothing : EA :  * : obsF 0
+R: doNothing : EA :  * : obsL -10
+R: doNothing : EA :  * : obsR -10
+R: doNothing : EA :  * : obsA -20
+R: doNothing : EA :  * : obsF -1
 R: doNothing : EA :  * : atGoal 1000
 R: doNothing : EF :  * : hit -100
-R: doNothing : EF :  * : obsL 0
-R: doNothing : EF :  * : obsR 0
-R: doNothing : EF :  * : obsA 0
-R: doNothing : EF :  * : obsF 0
+R: doNothing : EF :  * : obsL -10
+R: doNothing : EF :  * : obsR -10
+R: doNothing : EF :  * : obsA -20
+R: doNothing : EF :  * : obsF -1
 R: doNothing : EF :  * : atGoal 1000

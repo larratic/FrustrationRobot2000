@@ -1,0 +1,70 @@
+#POMDP for learning user level 
+ 
+discount: 0.95
+values: reward
+states: B E 
+actions: MostAuton SomeAuton LittleAuton 
+observations: manyHit-MapEasy fewHit-MapEasy noHit-MapEasy manyHit-MapHard fewHit-MapHard noHit-MapHard
+
+T: MostAuton
+0.9999	0.0001
+0.0001	0.9999
+
+T: SomeAuton
+0.9999	0.0001
+0.0001	0.9999
+
+T: LittleAuton
+0.9999	0.0001
+0.0001	0.9999
+
+O: MostAuton
+0.15	0.24	0.05	0.3	0.25	0.01
+0.001	0.1	0.389	0.01	0.3	0.2
+
+O: SomeAuton
+0.2	0.1	0.001	0.398	0.3	0.001
+0.001	0.1	0.299	0.1	0.3	0.2
+
+O: LittleAuton
+0.108	0.1	0.001	0.59	0.2	0.001
+0.001	0.01	0.389	0.1	0.2	0.3
+
+R: MostAuton : B :  * : manyHit-MapEasy -100
+R: MostAuton : B :  * : fewHit-MapEasy -10
+R: MostAuton : B :  * : noHit-MapEasy 5
+R: MostAuton : B :  * : manyHit-MapHard -50
+R: MostAuton : B :  * : fewHit-MapHard -5
+R: MostAuton : B :  * : noHit-MapHard 10
+R: MostAuton : E :  * : manyHit-MapEasy -3000
+R: MostAuton : E :  * : fewHit-MapEasy -300
+R: MostAuton : E :  * : noHit-MapEasy 5
+R: MostAuton : E :  * : manyHit-MapHard -200
+R: MostAuton : E :  * : fewHit-MapHard -20
+R: MostAuton : E :  * : noHit-MapHard 5
+
+R: SomeAuton : B :  * : manyHit-MapEasy -50
+R: SomeAuton : B :  * : fewHit-MapEasy -5
+R: SomeAuton : B :  * : noHit-MapEasy 10
+R: SomeAuton : B :  * : manyHit-MapHard -100
+R: SomeAuton : B :  * : fewHit-MapHard -10
+R: SomeAuton : B :  * : noHit-MapHard 5
+R: SomeAuton : E :  * : manyHit-MapEasy -100
+R: SomeAuton : E :  * : fewHit-MapEasy -10
+R: SomeAuton : E :  * : noHit-MapEasy 5
+R: SomeAuton : E :  * : manyHit-MapHard -50
+R: SomeAuton : E :  * : fewHit-MapHard -5
+R: SomeAuton : E :  * : noHit-MapHard 10
+
+R: LittleAuton : B :  * : manyHit-MapEasy -200
+R: LittleAuton : B :  * : fewHit-MapEasy -20
+R: LittleAuton : B :  * : noHit-MapEasy 5
+R: LittleAuton : B :  * : manyHit-MapHard -300
+R: LittleAuton : B :  * : fewHit-MapHard -30
+R: LittleAuton : B :  * : noHit-MapHard 5
+R: LittleAuton : E :  * : manyHit-MapEasy -50
+R: LittleAuton : E :  * : fewHit-MapEasy -5
+R: LittleAuton : E :  * : noHit-MapEasy 10
+R: LittleAuton : E :  * : manyHit-MapHard -100
+R: LittleAuton : E :  * : fewHit-MapHard -10
+R: LittleAuton : E :  * : noHit-MapHard 5

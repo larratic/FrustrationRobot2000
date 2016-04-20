@@ -1,0 +1,22 @@
+#This is the test POMDP 
+ 
+discount: 0.95
+values: reward
+states: B E 
+actions: something 
+observations: manyHit fewHit noHit
+
+T: something
+0.9	0.1
+0.1	0.9
+
+O: something
+0.7	0.2	0.1
+0.1	0.2	0.7
+
+R: something : B :  * : manyHit -100
+R: something : B :  * : fewHit -10
+R: something : B :  * : noHit 5
+R: something : E :  * : manyHit -200
+R: something : E :  * : fewHit -20
+R: something : E :  * : noHit 10

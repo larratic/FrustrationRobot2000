@@ -1,0 +1,58 @@
+#POMDP for learning user level 
+ 
+discount: 0.15
+values: reward
+states: B E 
+actions: MostAuton LittleAuton 
+observations: manyHit-MapEasy fewHit-MapEasy noHit-MapEasy manyHit-MapHard fewHit-MapHard noHit-MapHard
+
+T: MostAuton
+0.9999	0.0001
+0.0001	0.9999
+
+T: LittleAuton
+0.9999	0.0001
+0.0001	0.9999
+
+O: MostAuton
+0.1	0.35	0.05	0.1	0.35	0.05
+0.001	0.01	0.489	0.01	0.2	0.29
+
+
+O: LittleAuton
+0.2	0.25	0.05	0.38	0.1199	0.0001
+0.001	0.02	0.479	0.01	0.29	0.2
+
+R: MostAuton : B :  * : manyHit-MapEasy -100
+R: MostAuton : B :  * : fewHit-MapEasy -50
+R: MostAuton : B :  * : noHit-MapEasy 5
+
+R: MostAuton : B :  * : manyHit-MapHard -100
+R: MostAuton : B :  * : fewHit-MapHard -50
+R: MostAuton : B :  * : noHit-MapHard 10
+
+R: MostAuton : E :  * : manyHit-MapEasy -1000
+R: MostAuton : E :  * : fewHit-MapEasy -25
+R: MostAuton : E :  * : noHit-MapEasy 5
+
+R: MostAuton : E :  * : manyHit-MapHard -1000
+R: MostAuton : E :  * : fewHit-MapHard -25
+R: MostAuton : E :  * : noHit-MapHard 10
+
+R: LittleAuton : B :  * : manyHit-MapEasy -100
+R: LittleAuton : B :  * : fewHit-MapEasy -50
+R: LittleAuton : B :  * : noHit-MapEasy 5
+
+R: LittleAuton : B :  * : manyHit-MapHard -100
+R: LittleAuton : B :  * : fewHit-MapHard -50
+R: LittleAuton : B :  * : noHit-MapHard 10
+
+R: LittleAuton : E :  * : manyHit-MapEasy -1000
+R: LittleAuton : E :  * : fewHit-MapEasy -25
+R: LittleAuton : E :  * : noHit-MapEasy 15
+
+R: LittleAuton : E :  * : manyHit-MapHard -1000
+R: LittleAuton : E :  * : fewHit-MapHard -25
+R: LittleAuton : E :  * : noHit-MapHard 50
+
+

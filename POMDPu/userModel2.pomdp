@@ -1,0 +1,36 @@
+#This is the test POMDP 
+ 
+discount: 0.95
+values: reward
+states: B E 
+actions: help nohelp 
+observations: manyHit fewHit noHit
+
+T: help
+0.999	0.001
+0.001	0.999
+
+T: nohelp
+0.9999	0.0001
+0.15	0.85
+
+O: help
+0.3	0.5	0.2
+0.1	0.2	0.7
+
+O: nohelp
+0.7	0.2	0.1
+0.1	0.2	0.7
+
+R: help : B :  * : manyHit -100
+R: help : B :  * : fewHit -10
+R: help : B :  * : noHit 5
+R: help : E :  * : manyHit -5000
+R: help : E :  * : fewHit -500
+R: help : E :  * : noHit -100
+R: nohelp : B :  * : manyHit -1000
+R: nohelp : B :  * : fewHit -100
+R: nohelp : B :  * : noHit -5
+R: nohelp : E :  * : manyHit -200
+R: nohelp : E :  * : fewHit -20
+R: nohelp : E :  * : noHit 10
