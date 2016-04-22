@@ -3,189 +3,189 @@
 discount: 0.95
 values: reward
 states: B-1 B-2 E-1 E-2
-actions: B-someHelp B-moreHelp E-someHelp E-moreHelp
+actions: moreHelp mostHelp leastHelp someHelp
 observations: manyHit-MapEasy fewHit-MapEasy noHit-MapEasy manyHit-MapHard fewHit-MapHard noHit-MapHard
 
-T: B-someHelp
+T: moreHelp
 0.9498	0.05	0.0001	0.0001
-0.05	0.0001	0.0001	0.9498
+0.05	0.9498	0.0001	0.0001
 0.0001	0.0001	0.9498	0.05
 0.0001	0.0001	0.05	0.9498
 
-T: B-moreHelp
+T: mostHelp
 0.9498	0.05	0.0001	0.0001
-0.05	0.0001	0.0001	0.9498
+0.05	0.9498	0.0001	0.0001
 0.0001	0.0001	0.9498	0.05
 0.0001	0.0001	0.05	0.9498
 
-T: E-someHelp
+T: leastHelp
 0.9498	0.05	0.0001	0.0001
-0.05	0.0001	0.0001	0.9498
+0.05	0.9498	0.0001	0.0001
 0.0001	0.0001	0.9498	0.05
 0.0001	0.0001	0.05	0.9498
 
-T: E-moreHelp
+T: someHelp
 0.9498	0.05	0.0001	0.0001
-0.05	0.0001	0.0001	0.9498
+0.05	0.9498	0.0001	0.0001
 0.0001	0.0001	0.9498	0.05
 0.0001	0.0001	0.05	0.9498
 
-O: B-someHelp
+O: moreHelp
 0.41	0.35	0.199	0.01	0.025	0.006
 0.01	0.025	0.006	0.65	0.21	0.099
 0.001	0.15	0.844	0.001	0.001	0.003
 0.001	0.001	0.003	0.001	0.35	0.644
 
-O: B-moreHelp
+O: mostHelp
 0.41	0.35	0.199	0.01	0.025	0.006
 0.01	0.025	0.006	0.41	0.35	0.199
 0.001	0.15	0.844	0.001	0.001	0.003
 0.001	0.001	0.003	0.001	0.35	0.644
 
-O: E-someHelp
+O: leastHelp
 0.71	0.159	0.09	0.01	0.025	0.006
 0.01	0.025	0.006	0.81	0.05	0.099
 0.001	0.15	0.844	0.001	0.001	0.003
 0.001	0.001	0.003	0.001	0.35	0.644
 
-O: E-moreHelp
+O: someHelp
 0.71	0.159	0.09	0.01	0.025	0.006
 0.01	0.025	0.006	0.81	0.05	0.099
 0.001	0.15	0.844	0.001	0.001	0.003
 0.001	0.001	0.003	0.001	0.15	0.844
 
-R: B-someHelp : B-1 :  * : manyHit-MapEasy -1000
-R: B-someHelp : B-1 :  * : fewHit-MapEasy -50
-R: B-someHelp : B-1 :  * : noHit-MapEasy 10
+R: moreHelp : B-1 :  * : manyHit-MapEasy -1000
+R: moreHelp : B-1 :  * : fewHit-MapEasy -50
+R: moreHelp : B-1 :  * : noHit-MapEasy 10
 
-R: B-moreHelp : B-1 :  * : manyHit-MapEasy -1000
-R: B-moreHelp : B-1 :  * : fewHit-MapEasy -500
-R: B-moreHelp : B-1 :  * : noHit-MapEasy 10
+R: mostHelp : B-1 :  * : manyHit-MapEasy -1000
+R: mostHelp : B-1 :  * : fewHit-MapEasy -500
+R: mostHelp : B-1 :  * : noHit-MapEasy 10
 
-R: E-someHelp : B-1 :  * : manyHit-MapEasy -2000
-R: E-someHelp : B-1 :  * : fewHit-MapEasy -500
-R: E-someHelp : B-1 :  * : noHit-MapEasy 10
+R: leastHelp : B-1 :  * : manyHit-MapEasy -2000
+R: leastHelp : B-1 :  * : fewHit-MapEasy -500
+R: leastHelp : B-1 :  * : noHit-MapEasy 10
 
-R: E-moreHelp : B-1 :  * : manyHit-MapEasy -2000
-R: E-moreHelp : B-1 :  * : fewHit-MapEasy -500
-R: E-moreHelp : B-1 :  * : noHit-MapEasy 10
+R: someHelp : B-1 :  * : manyHit-MapEasy -2000
+R: someHelp : B-1 :  * : fewHit-MapEasy -500
+R: someHelp : B-1 :  * : noHit-MapEasy 10
 
-R: B-someHelp : B-1 :  * : manyHit-MapHard -1000
-R: B-someHelp : B-1 :  * : fewHit-MapHard -50
-R: B-someHelp : B-1 :  * : noHit-MapHard 10
+R: moreHelp : B-1 :  * : manyHit-MapHard -1000
+R: moreHelp : B-1 :  * : fewHit-MapHard -50
+R: moreHelp : B-1 :  * : noHit-MapHard 10
 
-R: B-moreHelp : B-1 :  * : manyHit-MapHard -1000
-R: B-moreHelp : B-1 :  * : fewHit-MapHard -500
-R: B-moreHelp : B-1 :  * : noHit-MapHard 10
+R: mostHelp : B-1 :  * : manyHit-MapHard -1000
+R: mostHelp : B-1 :  * : fewHit-MapHard -500
+R: mostHelp : B-1 :  * : noHit-MapHard 10
 
-R: E-someHelp : B-1 :  * : manyHit-MapHard -2000
-R: E-someHelp : B-1 :  * : fewHit-MapHard -500
-R: E-someHelp : B-1 :  * : noHit-MapHard 10
+R: leastHelp : B-1 :  * : manyHit-MapHard -2000
+R: leastHelp : B-1 :  * : fewHit-MapHard -500
+R: leastHelp : B-1 :  * : noHit-MapHard 10
 
-R: E-moreHelp : B-1 :  * : manyHit-MapHard -2000
-R: E-moreHelp : B-1 :  * : fewHit-MapHard -500
-R: E-moreHelp : B-1 :  * : noHit-MapHard 10
-
-
-
-R: B-someHelp : B-2 :  * : manyHit-MapEasy -1000
-R: B-someHelp : B-2 :  * : fewHit-MapEasy -500
-R: B-someHelp : B-2 :  * : noHit-MapEasy 10
-
-R: B-moreHelp : B-2 :  * : manyHit-MapEasy -1000
-R: B-moreHelp : B-2 :  * : fewHit-MapEasy -50
-R: B-moreHelp : B-2 :  * : noHit-MapEasy 10
-
-R: E-someHelp : B-2 :  * : manyHit-MapEasy -2000
-R: E-someHelp : B-2 :  * : fewHit-MapEasy -500
-R: E-someHelp : B-2 :  * : noHit-MapEasy 10
-
-R: E-moreHelp : B-2 :  * : manyHit-MapEasy -2000
-R: E-moreHelp : B-2 :  * : fewHit-MapEasy -500
-R: E-moreHelp : B-2 :  * : noHit-MapEasy 10
-
-R: B-someHelp : B-2 :  * : manyHit-MapHard -1000
-R: B-someHelp : B-2 :  * : fewHit-MapHard -500
-R: B-someHelp : B-2 :  * : noHit-MapHard 10
-
-R: B-moreHelp : B-2 :  * : manyHit-MapHard -1000
-R: B-moreHelp : B-2 :  * : fewHit-MapHard -50
-R: B-moreHelp : B-2 :  * : noHit-MapHard 10
-
-R: E-someHelp : B-2 :  * : manyHit-MapHard -2000
-R: E-someHelp : B-2 :  * : fewHit-MapHard -500
-R: E-someHelp : B-2 :  * : noHit-MapHard 10
-
-R: E-moreHelp : B-2 :  * : manyHit-MapHard -2000
-R: E-moreHelp : B-2 :  * : fewHit-MapHard -500
-R: E-moreHelp : B-2 :  * : noHit-MapHard 10
+R: someHelp : B-1 :  * : manyHit-MapHard -2000
+R: someHelp : B-1 :  * : fewHit-MapHard -500
+R: someHelp : B-1 :  * : noHit-MapHard 10
 
 
 
-R: B-someHelp : E-1 :  * : manyHit-MapEasy -2000
-R: B-someHelp : E-1 :  * : fewHit-MapEasy -500
-R: B-someHelp : E-1 :  * : noHit-MapEasy 10
+R: moreHelp : B-2 :  * : manyHit-MapEasy -1000
+R: moreHelp : B-2 :  * : fewHit-MapEasy -500
+R: moreHelp : B-2 :  * : noHit-MapEasy 10
 
-R: B-moreHelp : E-1 :  * : manyHit-MapEasy -2000
-R: B-moreHelp : E-1 :  * : fewHit-MapEasy -500
-R: B-moreHelp : E-1 :  * : noHit-MapEasy 10
+R: mostHelp : B-2 :  * : manyHit-MapEasy -1000
+R: mostHelp : B-2 :  * : fewHit-MapEasy -50
+R: mostHelp : B-2 :  * : noHit-MapEasy 10
 
-R: E-someHelp : E-1 :  * : manyHit-MapEasy -1000
-R: E-someHelp : E-1 :  * : fewHit-MapEasy -50
-R: E-someHelp : E-1 :  * : noHit-MapEasy 10
+R: leastHelp : B-2 :  * : manyHit-MapEasy -2000
+R: leastHelp : B-2 :  * : fewHit-MapEasy -500
+R: leastHelp : B-2 :  * : noHit-MapEasy 10
 
-R: E-moreHelp : E-1 :  * : manyHit-MapEasy -1000
-R: E-moreHelp : E-1 :  * : fewHit-MapEasy -500
-R: E-moreHelp : E-1 :  * : noHit-MapEasy 10
+R: someHelp : B-2 :  * : manyHit-MapEasy -2000
+R: someHelp : B-2 :  * : fewHit-MapEasy -500
+R: someHelp : B-2 :  * : noHit-MapEasy 10
 
-R: B-someHelp : E-1 :  * : manyHit-MapHard -2000
-R: B-someHelp : E-1 :  * : fewHit-MapHard -500
-R: B-someHelp : E-1 :  * : noHit-MapHard 10
+R: moreHelp : B-2 :  * : manyHit-MapHard -1000
+R: moreHelp : B-2 :  * : fewHit-MapHard -500
+R: moreHelp : B-2 :  * : noHit-MapHard 10
 
-R: B-moreHelp : E-1 :  * : manyHit-MapHard -2000
-R: B-moreHelp : E-1 :  * : fewHit-MapHard -500
-R: B-moreHelp : E-1 :  * : noHit-MapHard 10
+R: mostHelp : B-2 :  * : manyHit-MapHard -1000
+R: mostHelp : B-2 :  * : fewHit-MapHard -50
+R: mostHelp : B-2 :  * : noHit-MapHard 10
 
-R: E-someHelp : E-1 :  * : manyHit-MapHard -1000
-R: E-someHelp : E-1 :  * : fewHit-MapHard -50
-R: E-someHelp : E-1 :  * : noHit-MapHard 10
+R: leastHelp : B-2 :  * : manyHit-MapHard -2000
+R: leastHelp : B-2 :  * : fewHit-MapHard -500
+R: leastHelp : B-2 :  * : noHit-MapHard 10
 
-R: E-moreHelp : E-1 :  * : manyHit-MapHard -1000
-R: E-moreHelp : E-1 :  * : fewHit-MapHard -500
-R: E-moreHelp : E-1 :  * : noHit-MapHard 10
+R: someHelp : B-2 :  * : manyHit-MapHard -2000
+R: someHelp : B-2 :  * : fewHit-MapHard -500
+R: someHelp : B-2 :  * : noHit-MapHard 10
 
 
 
-R: B-someHelp : E-2 :  * : manyHit-MapEasy -2000
-R: B-someHelp : E-2 :  * : fewHit-MapEasy -500
-R: B-someHelp : E-2 :  * : noHit-MapEasy 10
+R: moreHelp : E-1 :  * : manyHit-MapEasy -2000
+R: moreHelp : E-1 :  * : fewHit-MapEasy -500
+R: moreHelp : E-1 :  * : noHit-MapEasy 10
 
-R: B-moreHelp : E-2 :  * : manyHit-MapEasy -2000
-R: B-moreHelp : E-2 :  * : fewHit-MapEasy -500
-R: B-moreHelp : E-2 :  * : noHit-MapEasy 10
+R: mostHelp : E-1 :  * : manyHit-MapEasy -2000
+R: mostHelp : E-1 :  * : fewHit-MapEasy -500
+R: mostHelp : E-1 :  * : noHit-MapEasy 10
 
-R: E-someHelp : E-2 :  * : manyHit-MapEasy -1000
-R: E-someHelp : E-2 :  * : fewHit-MapEasy -50
-R: E-someHelp : E-2 :  * : noHit-MapEasy 10
+R: leastHelp : E-1 :  * : manyHit-MapEasy -1000
+R: leastHelp : E-1 :  * : fewHit-MapEasy -50
+R: leastHelp : E-1 :  * : noHit-MapEasy 10
 
-R: E-moreHelp : E-2 :  * : manyHit-MapEasy -1000
-R: E-moreHelp : E-2 :  * : fewHit-MapEasy -50
-R: E-moreHelp : E-2 :  * : noHit-MapEasy 10
+R: someHelp : E-1 :  * : manyHit-MapEasy -1000
+R: someHelp : E-1 :  * : fewHit-MapEasy -500
+R: someHelp : E-1 :  * : noHit-MapEasy 10
 
-R: B-someHelp : E-2 :  * : manyHit-MapHard -2000
-R: B-someHelp : E-2 :  * : fewHit-MapHard -500
-R: B-someHelp : E-2 :  * : noHit-MapHard 10
+R: moreHelp : E-1 :  * : manyHit-MapHard -2000
+R: moreHelp : E-1 :  * : fewHit-MapHard -500
+R: moreHelp : E-1 :  * : noHit-MapHard 10
 
-R: B-moreHelp : E-2 :  * : manyHit-MapHard -2000
-R: B-moreHelp : E-2 :  * : fewHit-MapHard -500
-R: B-moreHelp : E-2 :  * : noHit-MapHard 10
+R: mostHelp : E-1 :  * : manyHit-MapHard -2000
+R: mostHelp : E-1 :  * : fewHit-MapHard -500
+R: mostHelp : E-1 :  * : noHit-MapHard 10
 
-R: E-someHelp : E-2 :  * : manyHit-MapHard -1000
-R: E-someHelp : E-2 :  * : fewHit-MapHard -500
-R: E-someHelp : E-2 :  * : noHit-MapHard 10
+R: leastHelp : E-1 :  * : manyHit-MapHard -1000
+R: leastHelp : E-1 :  * : fewHit-MapHard -50
+R: leastHelp : E-1 :  * : noHit-MapHard 10
 
-R: E-moreHelp : E-2 :  * : manyHit-MapHard -1000
-R: E-moreHelp : E-2 :  * : fewHit-MapHard -50
-R: E-moreHelp : E-2 :  * : noHit-MapHard 10
+R: someHelp : E-1 :  * : manyHit-MapHard -1000
+R: someHelp : E-1 :  * : fewHit-MapHard -500
+R: someHelp : E-1 :  * : noHit-MapHard 10
+
+
+
+R: moreHelp : E-2 :  * : manyHit-MapEasy -2000
+R: moreHelp : E-2 :  * : fewHit-MapEasy -500
+R: moreHelp : E-2 :  * : noHit-MapEasy 10
+
+R: mostHelp : E-2 :  * : manyHit-MapEasy -2000
+R: mostHelp : E-2 :  * : fewHit-MapEasy -500
+R: mostHelp : E-2 :  * : noHit-MapEasy 10
+
+R: leastHelp : E-2 :  * : manyHit-MapEasy -1000
+R: leastHelp : E-2 :  * : fewHit-MapEasy -50
+R: leastHelp : E-2 :  * : noHit-MapEasy 10
+
+R: someHelp : E-2 :  * : manyHit-MapEasy -1000
+R: someHelp : E-2 :  * : fewHit-MapEasy -50
+R: someHelp : E-2 :  * : noHit-MapEasy 10
+
+R: moreHelp : E-2 :  * : manyHit-MapHard -2000
+R: moreHelp : E-2 :  * : fewHit-MapHard -500
+R: moreHelp : E-2 :  * : noHit-MapHard 10
+
+R: mostHelp : E-2 :  * : manyHit-MapHard -2000
+R: mostHelp : E-2 :  * : fewHit-MapHard -500
+R: mostHelp : E-2 :  * : noHit-MapHard 10
+
+R: leastHelp : E-2 :  * : manyHit-MapHard -1000
+R: leastHelp : E-2 :  * : fewHit-MapHard -500
+R: leastHelp : E-2 :  * : noHit-MapHard 10
+
+R: someHelp : E-2 :  * : manyHit-MapHard -1000
+R: someHelp : E-2 :  * : fewHit-MapHard -50
+R: someHelp : E-2 :  * : noHit-MapHard 10
 
 

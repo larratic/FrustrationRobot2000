@@ -7,8 +7,8 @@ actions: help nohelp
 observations: manyHit fewHit noHit
 
 T: help
-0.999	0.001
-0.001	0.999
+0.9999	0.0001
+0.0001	0.9999
 
 T: nohelp
 0.9999	0.0001

@@ -83,6 +83,7 @@ class Obstacle(pygame.Rect):       #for now just colored rectangles
         self.force      = 0.0
         self.theta      = 0.0
         self.detected   = False
+        self.dist       = 1000.0
         
     def nodes(self):
         nodes = []

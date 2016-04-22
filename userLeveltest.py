@@ -12,11 +12,7 @@ display_rows        = 600
 wall_thickness      = 5         #thickness in pixels
 wall_color          = 'black'
 food_color          = 'purple'
-trace_color         = 'blue'
-trace_arc           = 10        #in degrees, shows on both sides of r.azi
-trace_decrease      = -17       #negative, subtracts from robot size to make a smaller trace
-trace_width         = 1
-leave_trace         = 0         #default mode is not to leave traces
+
 
 color_of_nothing    = 'white'
 sim_version         = 'FrustrationRobot2000'
@@ -35,7 +31,8 @@ r_visual_angle   = 30       #in degrees, must divide 90 exactly!
 r_visual_granularity = 5    #must be < wall_thickness for walls to be detected correctly!
 
 
-user_input       = 0.0        #amount of influence of user control the human has on the system
+user_inputF       = 0.0
+user_inputR       = 0.0         #amount of influence of user control the human has on the system
 
 Distance        = 0.0         # total Distance travelled by robot
 minObsDist      = 1000.0      # closest the robot came to an obstacle
@@ -61,7 +58,7 @@ from pomdp import *
 #POMDP files
 filename_env =  'POMDPu/userlevel2.pomdp'
 filename_policy = 'POMDPu/out.policy'
-pomdp = POMDP(filename_env, filename_policy, np.array([[0.25],[0.25],[0.25],[0.25]]))
+pomdp = POMDP(filename_env, filename_policy, np.array([[0.15],[0.35],[0.15],[0.35]]))
 
 prevOb = 4
 
@@ -97,6 +94,9 @@ class Obstacle(pygame.Rect):       #for now just colored rectangles
         self.force      = 0.0
         self.theta      = 0.0
         self.detected   = False
+        self.dist       = 1000.0
+        self.xCollide   = 0.0
+        self.yCollide   = 0.0
         
         
     def nodes(self):
@@ -136,11 +136,6 @@ def change_alpha_for_alpha(surface,new_alpha):
                 surface.set_at((x,y),(r,g,b,new_alpha))
     return surface
 
-def draw_traces(target_surf):
-    for t in list_traces:
-        pygame.draw.arc(target_surf, pygame.Color(trace_color), t.rect,\
-                        t.start_angle*math.pi/180, t.stop_angle*math.pi/180, trace_width)
-                        
 class Goal(pygame.sprite.Sprite):
     def __init__(self, image):
         pygame.sprite.Sprite.__init__(self) #call Sprite initializer
@@ -186,14 +181,14 @@ w03 = Obstacle(0,display_rows-wall_thickness,display_cols,wall_thickness,wall_co
 list_obstacles.append(w03)
 w04 = Obstacle(0,0,wall_thickness,display_rows, wall_color)                          #left wall
 list_obstacles.append(w04)
-#w05 = Obstacle(display_cols/2,display_rows/2,wall_thickness,display_rows/2,wall_color)
-#list_obstacles.append(w05)
-#w06 = Obstacle(display_cols/6,display_rows/2,display_rows/4,wall_thickness,wall_color)
-#list_obstacles.append(w06)
+w05 = Obstacle(display_cols/2,display_rows/2,wall_thickness,display_rows/2,wall_color)
+list_obstacles.append(w05)
+w06 = Obstacle(display_cols/6,display_rows/2,display_rows/4,wall_thickness,wall_color)
+list_obstacles.append(w06)
 
 
 ### create random obastacles
-#obs = random.randint(20,70)
+#obs = random.randint(10,20)
 #for i in range(1,obs):
 #    x = random.randint(100,display_cols)
 #    y = random.randint(100,display_rows)
@@ -270,6 +265,10 @@ class Robot(pygame.sprite.Sprite):
         self.pomdp      = pomdp
         self.action = pomdp.get_best_action()[0]
         self.numCollision = 0
+        
+        self.currentSpeed = -1.0
+        self.currentAngle = 48.0
+        self.prevSpinAngle =0.0
 
         
         #these are the parameters of the range-sensing system
@@ -329,8 +328,12 @@ class Robot(pygame.sprite.Sprite):
           
         dx = self.speed*math.sin(self.bearing*math.pi/180)
         dy = self.speed*math.cos(self.bearing*math.pi/180)
+        
+        drift = random.choice([0,1],1)
+        cx = drift*2*self.currentSpeed*math.sin(self.currentAngle*math.pi/180)
+        cy = drift*2*self.currentSpeed*math.cos(self.currentAngle*math.pi/180)
 
-        self.move(dx,dy,dtheta)
+        self.move(dx+cx,dy+cy,dtheta)
 
 
     
@@ -341,9 +344,10 @@ class Robot(pygame.sprite.Sprite):
         """A*"""
         self.sense()
         dtheta = 0.0
-        global user_input
+        global user_inputF,user_inputR
       
-        U =user_input
+        UF =user_inputF
+        UR = user_inputR
         
         if self.collided:
             print 'update-->self.opmode==0 THAT HURT!'
@@ -353,13 +357,13 @@ class Robot(pygame.sprite.Sprite):
         dtheta1 = 0.0
         if self.direction == 'w':
             if self.speed >-self.maxAccel:
-                self.speed -= 2*U
+                self.speed -= 2*UF
         elif self.direction == 's':
 
             if self.speed<self.maxAccel:
-                self.speed += 2*U
+                self.speed += 2*UF
         elif self.direction == 'd' or self.direction == 'a':
-            dtheta1 = U*self.rotspeed*self._d[self.direction]
+            dtheta1 = UR*self.rotspeed*self._d[self.direction]
             print dtheta1
 
         # generate A* path
@@ -392,15 +396,15 @@ class Robot(pygame.sprite.Sprite):
 
         if self.spin_angle_left != 0:     #must finish SPIN
             if math.fabs(self.spin_angle_left) <= self.rotspeed:
-                dtheta = int((1-U)*(sign(self.spin_angle_left))+dtheta1)
+                dtheta = int((1-UR)*(sign(self.spin_angle_left))+dtheta1)
             else:
-                dtheta = int((1-U)*(sign(self.spin_angle_left)*(self.rotspeed))+dtheta1)
+                dtheta = int((1-UR)*(sign(self.spin_angle_left)*(self.rotspeed))+dtheta1)
                 
             if self.spin_angle_left > 45 or self.spin_angle_left < -45:
                 if self.speed < 0 :
-                    self.speed += 1*(1-U)
+                    self.speed += 1*(1-UF)
                 elif self.speed > 0:
-                    self.speed -= 1*(1-U)
+                    self.speed -= 1*(1-UF)
                 
 
         if self.obsWarn :
@@ -430,7 +434,7 @@ class Robot(pygame.sprite.Sprite):
                        
         else :
             if self.speed >-self.maxAccel :
-                self.speed -= 1*(1-U)
+                self.speed -= 1*(1-UF)
                     
         print 'speed: ' + str(self.speed)
         moveX = self.speed*math.sin(self.bearing*math.pi/180)
@@ -444,11 +448,12 @@ class Robot(pygame.sprite.Sprite):
 ##### potential field method
         self.sense()   
         dtheta = 0 
-        global user_input
-        if user_input > 1:
-            user_input = 1
+        global user_inputF,user_inputR
+        if user_inputF > 1:
+            user_inputF = 1
             
-        U =user_input
+        UF =user_inputF
+        UR = user_inputR
         dtheta1 = 0.0
 
         if self.collided:
@@ -459,12 +464,12 @@ class Robot(pygame.sprite.Sprite):
         
         if self.direction == 'w':
           if self.speed >-self.maxAccel:
-              self.speed -= 2*U
+              self.speed -= 2*UF
         elif self.direction == 's':
             if self.speed < self.maxAccel:
-                self.speed += 2*U
+                self.speed += 2*UF
         elif self.direction == 'd' or self.direction == 'a':
-            dtheta1 =  U*self.rotspeed*self._d[self.direction]
+            dtheta1 =  UF*self.rotspeed*self._d[self.direction]
             print dtheta1
 
             
@@ -472,7 +477,6 @@ class Robot(pygame.sprite.Sprite):
         dx,dy = self.potentialField()
         if math.isnan(dx) or math.isnan(dy):
           angle = self.bearing
-          print 'yo'
         else:
           angle = int(math.atan2(dx,dy)* 180/math.pi) + 180
         if angle  >= 360:         #keep theta between -360..360
@@ -485,15 +489,15 @@ class Robot(pygame.sprite.Sprite):
          
         if self.spin_angle_left != 0:     #must finish SPIN
             if math.fabs(self.spin_angle_left) <= self.rotspeed:
-                dtheta = int((1-U)*sign(self.spin_angle_left))+dtheta1
+                dtheta = int((1-UR)*sign(self.spin_angle_left))+dtheta1
             else:
-                dtheta = int((1-U)*sign(self.spin_angle_left)*(self.rotspeed))+dtheta1
+                dtheta = int((1-UR)*sign(self.spin_angle_left)*(1))+dtheta1
                 
             if self.spin_angle_left > 45 or self.spin_angle_left < -45:
                 if self.speed < 0 :
-                    self.speed += 1*(1-U)
+                    self.speed += 1*(1-UF)
                 elif self.speed > 0:
-                    self.speed -= 1*(1-U)
+                    self.speed -= 1*(1-UF)
        
         if self.obsWarn :
             if self.spin_angle_left != 0:
@@ -501,7 +505,7 @@ class Robot(pygame.sprite.Sprite):
                     self.speed += 2
                     
             elif self.speed < -2 :
-                 self.speed += 2*(1-U)
+                 self.speed += 2*(1-UF)
 #            else :
 #              print 'hey'
 #              self.speed = -2*(1-U)
@@ -532,11 +536,17 @@ class Robot(pygame.sprite.Sprite):
         
     def mode_3_pomdp(self):
       global pomdp,prevOb
+      if self.bearing < 0:
+        self.bearing +=360
 
       if self.action == 0:
-        self.beginner_someHelp_controller()
+        self.moreHelp()
       elif self.action == 1:
-        self.beginner_someHelp_controller()
+        self.mostHelp()
+      elif self.action == 2:
+        self.leastHelp()
+      elif self.action == 3:
+        self.someHelp()
       else:
         self.sense()   
         if self.collided:
@@ -556,12 +566,7 @@ class Robot(pygame.sprite.Sprite):
                 self.speed += 1
         elif self.direction == 'd' or self.direction == 'a':
             dtheta = self.rotspeed*self._d[self.direction]
-        
-  #      if self.action == 0:
-  #        dtheta += 10
-  #        
-  #      elif self.action == 1:
-  #         dtheta -= 10
+      
           
         dx = self.speed*math.sin(self.bearing*math.pi/180)
         dy = self.speed*math.cos(self.bearing*math.pi/180)
@@ -569,15 +574,19 @@ class Robot(pygame.sprite.Sprite):
         self.move(dx,dy,dtheta)
         
         
-    def beginner_someHelp_controller(self):
+    def mostHelp(self):
       self.sense()   
       dtheta = 0 
-      global user_input
-      if user_input > 1:
-          user_input = 1
+      self.maxAccel = 10.0
+      global user_inputF,user_inputR
+      if user_inputF > 1:
+          user_inputF = 1
+      if user_inputR > 1:
+          user_inputR = 1
           
-      U =user_input
-      dtheta1 = 0.0
+      UF =user_inputF
+      UR = user_inputR
+      dtheta1 = 0
 
       if self.collided:
               print 'update-->self.opmode==0 THAT HURT!'
@@ -586,19 +595,16 @@ class Robot(pygame.sprite.Sprite):
               self.numCollision  += 1
       
       if self.direction == 'w':
-          
           if self.speed >-self.maxAccel:
-              self.speed -= 2*U
+              self.speed -= 2*UF
       elif self.direction == 's':
           if self.speed < self.maxAccel:
-              self.speed += 2*U
+              self.speed += 2*UF
       elif self.direction == 'd' or self.direction == 'a':
-          dtheta1 =  U*self.rotspeed*self._d[self.direction]
-          print dtheta1
-
-          
-      
+          dtheta1 =  UR*self.rotspeed*self._d[self.direction]
+ 
       dx,dy = self.potentialField()
+      
       if math.isnan(dx) or math.isnan(dy):
         angle = self.bearing
       else:
@@ -607,50 +613,63 @@ class Robot(pygame.sprite.Sprite):
           angle -= 360
       if angle <= -360:
           angle += 360
+      self.spin_angle_left = (int(angle - self.bearing))
+      if(self.spin_angle_left) == (int(self.prevSpinAngle - 180)-5) or (self.spin_angle_left) == (int(self.prevSpinAngle + 180)+5) or (self.spin_angle_left) == (int(self.prevSpinAngle + 180)-5) or (self.spin_angle_left) == (int(self.prevSpinAngle - 180)+5):     
+        self.spin_angle_left = 0
 
-      self.spin_angle_left = angle - self.bearing
-      dtheta = dtheta+dtheta1
-       
+      else:
+        self.prevSpinAngle = self.spin_angle_left
+
+      
+        
+      if self.spin_angle_left  > 180:
+          self.spin_angle_left -= 360
+      if self.spin_angle_left < -180:
+          self.spin_angle_left +=360
+#      if math.fabs(self.spin_angle_left) == 180:
+#        self.spin_angle_left = 0
+      dtheta = int(dtheta+dtheta1)
       if self.spin_angle_left != 0:     #must finish SPIN
           if math.fabs(self.spin_angle_left) <= self.rotspeed:
-              dtheta = int((1-U)*sign(self.spin_angle_left))+dtheta1
+            dtheta = int((1-UF*0.1)*(1-UR)*sign(self.spin_angle_left)+dtheta1)
           else:
-              dtheta = int((1-U)*sign(self.spin_angle_left)*(self.rotspeed))+dtheta1
-              
+            dtheta = int((1-UF*0.1)*(1-UR)*sign(self.spin_angle_left)*(self.rotspeed)+dtheta1)
           if self.spin_angle_left > 45 or self.spin_angle_left < -45:
               if self.speed < 0 :
-                  self.speed += 1*(1-U)
+                  self.speed += 1*(1-UF)
               elif self.speed > 0:
-                  self.speed -= 1*(1-U)
+                  self.speed -= 1*(1-UF)
      
       if self.obsWarn :
-        
           if self.spin_angle_left != 0:
               if self.speed < 0 :
-                  self.speed += 2
+                  self.speed += .95*abs(self.speed)
                   
           elif self.speed < -2 :
-               self.speed += 4*(1-U)
-          else :
-              self.speed = -2*(1-U)
+               self.speed += .95*abs(self.speed)
+
 
                   
-      print 'speed: ' + str(self.speed)
-      print dtheta
+      
       movex = self.speed*math.sin(self.bearing*math.pi/180)
       movey = self.speed*math.cos(self.bearing*math.pi/180)
       self.move(movex,movey,dtheta)
+
         
-    def beginner_moreHelp_controller(self):
+    def moreHelp(self):
       self.sense()   
       dtheta = 0 
       self.maxAccel = 15.0
-      global user_input
-      if user_input > 1:
-          user_input = 1
+      
+      global user_inputF,user_inputR
+      if user_inputF > 1:
+          user_inputF = 1
+      if user_inputR > 1:
+          user_inputR = 1
           
-      U =user_input
-      dtheta1 = 0.0
+      UF =user_inputF
+      UR = user_inputR
+      dtheta1 = 0
 
       if self.collided:
               print 'update-->self.opmode==0 THAT HURT!'
@@ -659,19 +678,16 @@ class Robot(pygame.sprite.Sprite):
               self.numCollision  += 1
       
       if self.direction == 'w':
-          
           if self.speed >-self.maxAccel:
-              self.speed -= 2*U
+              self.speed -= 2*UF
       elif self.direction == 's':
           if self.speed < self.maxAccel:
-              self.speed += 2*U
+              self.speed += 2*UF
       elif self.direction == 'd' or self.direction == 'a':
-          dtheta1 =  U*self.rotspeed*self._d[self.direction]
-          print dtheta1
-
-          
-      
+          dtheta1 =  UR*self.rotspeed*self._d[self.direction]
+ 
       dx,dy = self.potentialField()
+      
       if math.isnan(dx) or math.isnan(dy):
         angle = self.bearing
       else:
@@ -681,39 +697,113 @@ class Robot(pygame.sprite.Sprite):
       if angle <= -360:
           angle += 360
 
-      self.spin_angle_left = angle - self.bearing
-      dtheta = dtheta+dtheta1
+      self.spin_angle_left = (int(angle - self.bearing))
+
+      if(self.spin_angle_left) == (int(self.prevSpinAngle - 180)-5) or (self.spin_angle_left) == (int(self.prevSpinAngle + 180)+5) or (self.spin_angle_left) == (int(self.prevSpinAngle + 180)-5) or (self.spin_angle_left) == (int(self.prevSpinAngle - 180)+5):     
+        self.spin_angle_left = 0
+
+      else:
+        self.prevSpinAngle = self.spin_angle_left
+
+      
+        
+      if self.spin_angle_left  > 180:
+          self.spin_angle_left -= 360
+      if self.spin_angle_left < -180:
+          self.spin_angle_left +=360
+#      if math.fabs(self.spin_angle_left) == 180:
+#        self.spin_angle_left = 0
+      dtheta = int(dtheta+dtheta1)
+
        
       if self.spin_angle_left != 0:     #must finish SPIN
           if math.fabs(self.spin_angle_left) <= self.rotspeed:
-              dtheta = int((1-U)*sign(self.spin_angle_left))+dtheta1
+            dtheta = int((1-UF*0.1)*(1-UR)*sign(self.spin_angle_left)+dtheta1)
           else:
-              dtheta = int((1-U)*sign(self.spin_angle_left)*(self.rotspeed))+dtheta1
-              
+            dtheta = int((1-UF*0.1)*(1-UR)*sign(self.spin_angle_left)*(self.rotspeed)+dtheta1)
           if self.spin_angle_left > 45 or self.spin_angle_left < -45:
               if self.speed < 0 :
-                  self.speed += 1*(1-U)
+                  self.speed += 1*(1-UF)
               elif self.speed > 0:
-                  self.speed -= 1*(1-U)
+                  self.speed -= 1*(1-UF)
      
       if self.obsWarn :
-
           if self.spin_angle_left != 0:
               if self.speed < 0 :
-                  self.speed += 2
+                  self.speed += .95*abs(self.speed)
                   
           elif self.speed < -2 :
-               self.speed += 6*(1-U)
-          else :
-              self.speed = -2*(1-U)
+               self.speed += .95*abs(self.speed)
+
 
                   
-      print 'speed: ' + str(self.speed)
-      print dtheta
+      
       movex = self.speed*math.sin(self.bearing*math.pi/180)
       movey = self.speed*math.cos(self.bearing*math.pi/180)
       self.move(movex,movey,dtheta)
       
+    def someHelp(self):
+      self.sense()   
+      self.maxAccel = 15.0
+      if self.collided:
+          print 'update-->self.opmode==0 THAT HURT!'
+          self.collided = False
+          self.speed = 0.0
+          self.numCollision  += 1
+   
+      dtheta = 0       
+
+
+      if self.direction == 'w':
+          if self.speed >-self.maxAccel:
+              self.speed -= 2
+      elif self.direction == 's':
+          if self.speed < self.maxAccel:
+              self.speed += 2
+      elif self.direction == 'd' or self.direction == 'a':
+          dtheta = self.rotspeed*self._d[self.direction]
+      
+      if self.obsWarn :
+        if self.spin_angle_left != 0:
+            if self.speed < 0 :
+                self.speed += .95*abs(self.speed)
+                
+        elif self.speed < -2 :
+             self.speed += .95*abs(self.speed)
+        
+      dx = self.speed*math.sin(self.bearing*math.pi/180)
+      dy = self.speed*math.cos(self.bearing*math.pi/180)
+      
+      
+
+      self.move(dx,dy,dtheta)
+        
+    def leastHelp(self):
+      self.sense()   
+      if self.collided:
+          print 'update-->self.opmode==0 THAT HURT!'
+          self.collided = False
+          self.speed = 0.0
+          self.numCollision  += 1
+   
+      dtheta = 0       
+
+
+      if self.direction == 'w':
+          if self.speed >-self.maxAccel:
+              self.speed -= 2
+      elif self.direction == 's':
+          if self.speed < self.maxAccel:
+              self.speed += 2
+      elif self.direction == 'd' or self.direction == 'a':
+          dtheta = self.rotspeed*self._d[self.direction]
+    
+        
+      dx = self.speed*math.sin(self.bearing*math.pi/180)
+      dy = self.speed*math.cos(self.bearing*math.pi/180)
+
+      self.move(dx,dy,dtheta)
+
       
     def mode_4_hmm(self):
       self.sense()   
@@ -774,44 +864,43 @@ class Robot(pygame.sprite.Sprite):
             global Distance
             Distance += math.sqrt(dx*dx + dy*dy)
             
-            
+    #potential field generation for obstacle avoidance      
     def potentialField(self):
-        RadiusOfInfluence   = 90.0
-        Kobjs               = 100.0
+        RadiusOfInfluence   = 50.0
+        Kobjs               = 1.0
         Kgoal               = 0
         self.infl_obst = []
         for ob in list_obstacles:
-          ob.dist = math.sqrt(math.pow(self.x - ob.x,2)+math.pow(self.y - ob.y,2))
+          #ob.dist = math.sqrt(math.pow(self.x - ob.x,2)+math.pow(self.y - ob.y,2))
           if ob.detected and ob.dist <= RadiusOfInfluence: 
               self.infl_obst.append(ob)
-              print 'howdy'
         Distance = np.zeros((1,len(self.infl_obst)))
         V        = np.zeros((2,len(self.infl_obst)))
         count = 0
         if self.infl_obst != []:
             for ob in self.infl_obst:
-                Distance[0][count] = ob.dist - ob.r
-                V[0][count]     = ob.x - self.x 
-                V[1][count]     = ob.y - self.y
+                Distance[0][count] = ob.dist #- ob.r
+                V[0][count]     = (ob.xCollide - self.x) 
+                V[1][count]     = (ob.yCollide - self.y)
                 count +=1
             
             rho = np.repeat(Distance,2,0)
             DrhoDx = -V/rho
             F = (1/rho - 1/RadiusOfInfluence)* 1/np.square(rho)*DrhoDx
             FObjects = Kobjs*numpy.sum(F) 
+
             
         else :
             FObjects = np.array([0,0])
             
-        GoalError = np.array([self.speed*math.sin(self.bearing*math.pi/180)-self.x,self.speed*math.cos(self.bearing*math.pi/180)-self.y])    
-       # GoalError = np.array([self.goal.x - self.x, self.goal.y - self.y])
+        #GoalError = np.array([self.speed*math.sin(self.bearing*math.pi/180)-self.x,self.speed*math.cos(self.bearing*math.pi/180)-self.y])    
+        GoalError = np.array([self.goal.x - self.x, self.goal.y - self.y])
         normGoal = (math.sqrt(math.pow(GoalError[0],2)+math.pow(GoalError[1],2)))
         Fgoal = Kgoal * GoalError/normGoal
-        Ftotal = Fgoal + FObjects
+        Ftotal = FObjects + Fgoal
         normTotal = (math.sqrt(math.pow(Ftotal[0],2)+math.pow(Ftotal[1],2)))
         Magnitude = numpy.min((1,normTotal))
         Ftotal = Ftotal/normTotal * Magnitude
-        print Ftotal
 
         return Ftotal
             
@@ -856,14 +945,14 @@ class Robot(pygame.sprite.Sprite):
                     if ob.rect.collidepoint(x,y):
                       nr_collisions = 1
                       ob.detected = True
-
-                    
+                      if distance < ob.dist:
                         
+ 
+                        ob.xCollide = x
+                        ob.yCollide = y
+                        ob.dist = distance
 
 
-#                    if ob.collidepoint(x,y):
-#                        nr_collisions = 1
-#                        break       #breaks out of wall loop
                 if nr_collisions:   #non-zero collision
                     break           #breaks out of distance loop
                     
@@ -941,11 +1030,12 @@ def main():
     r.showGoalPath(screen)
     pygame.display.flip() 
     
-
+    #recording time
     going = True
     time_down = 0.0
     time_elapsed = 0.0
-    T = -1
+    T1 = -1
+    T2 = -1
     
     #HMM initalize  
     hmm = HMM()
@@ -958,39 +1048,32 @@ def main():
         clock.tick(fps)      #at most that many fps
         time_elapsed = 0.0
         #Event loop################################
-        global user_input, totalUserInput, o,R,numTrials
+        global user_inputF,user_inputR, totalUserInput, o,R,numTrials
         for event in pygame.event.get():
             if event == QUIT:
                 going = False
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     going = False
-                    
-                    
-                    
+                 
                 elif event.key == K_w:
-                    T = 1
+                    T1 = 1
                     r.direction = 'w'
                     time_down = pygame.time.get_ticks()
                 elif event.key == K_d:
-                    T = 1
+                    T2 = 1
                     r.direction = 'd'
                     time_down = pygame.time.get_ticks()
                 elif event.key == K_a:
-                    T = 1
+                    T2 = 1
                     r.direction = 'a'
                     time_down = pygame.time.get_ticks()
                 elif event.key == K_s:
-                    T = 1
+                    T1 = 1
                     r.direction = 's'
                     time_down = pygame.time.get_ticks()
 
-  
-                
-                
-                
-                
-               
+              
                 if event.key == K_SPACE:
                     r.opmode = 0            #teleop mode
                     caption = sim_version + ' \tmode: teleoperation  '
@@ -1007,56 +1090,58 @@ def main():
                     r.opmode = 4           #autonomous navigation mode
                     caption = (sim_version + ' \tmode: hmm  ')
                     
-                                    
-                    
-                    
-                if event.key == K_t:        #toggles the tracing mode
-                    if leave_trace:
-                        leave_trace = 0
-                        list_traces = list()
-                        print 'changing leave_trace from 1 to 0'
-                    else:
-                        leave_trace = 1
-                        print 'changing leave_trace from 0 to 1'
-                        
-            
+
             elif event.type == KEYUP:
                 
                 if event.key == K_w:
                     time_elapsed = pygame.time.get_ticks() - time_down
-                    T = -1
+                    T1 = -1
                     r.direction = 'N'
                 elif event.key == K_d:
                     time_elapsed = pygame.time.get_ticks() - time_down
-                    T = -1
+                    T2 = -1
                     r.direction = 'N'
                 elif event.key == K_a:
                     time_elapsed = pygame.time.get_ticks() - time_down
-                    T = -1
+                    T2 = -1
                     r.direction = 'N'
                 elif event.key == K_s:
                     time_elapsed = pygame.time.get_ticks() - time_down
-                    T = -1
+                    T1 = -1
                     r.direction = 'N'
                     
         totalUserInput += time_elapsed/1000.0
             
 
         
-        user_input += T*0.1
+        user_inputF += T1*0.1
 
-        if user_input > 1.0:
-            user_input = 1.0
-        elif user_input < 0.0:
-            user_input = 0.0
+        if user_inputF > 1.0:
+            user_inputF = 1.0
+        elif user_inputF < 0.0:
+            user_inputF = 0.0
+            
+        user_inputR += T2*0.1
+
+        if user_inputR > 1.0:
+            user_inputR = 1.0
+        elif user_inputR < 0.0:
+            user_inputR = 0.0
 
                 
         pygame.display.set_caption(caption)
-                        
+         
+        #slow down when stopped moving               
         if r.speed > 0.0:
-            r.speed -= 0.5
+          r.speed -= 0.5
+          if r.speed < 0.5:
+            r.speed = 0.0
         elif r.speed < 0.0:
-            r.speed += 0.5
+          r.speed += 0.5
+          if r.speed >0.5:
+            r.speed = 0.0
+        
+        
             
         
             
@@ -1109,11 +1194,12 @@ def main():
             s = pygame.display.get_surface()
             s.fill(ob.color, list_rect_obstacles[count])
             ob.detected = False
+            ob.dist = 1000.0
+            ob.xCollide = 0.0
+            ob.yCollide = 0.0
         r.draw_rays(screen)
         r.showGoalPath(screen)
-#       
-        
-        draw_traces(screen)
+
         robotSprite.draw(screen)
         goalSprite.draw(screen)
         
